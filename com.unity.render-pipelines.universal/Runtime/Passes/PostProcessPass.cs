@@ -22,6 +22,7 @@ namespace UnityEngine.Rendering.Universal.Internal
     {
         RenderTextureDescriptor m_Descriptor;
         RenderTargetHandle m_Source;
+        RenderTargetHandle m_BloomSource;
         RenderTargetHandle m_Destination;
         RenderTargetHandle m_Depth;
         RenderTargetHandle m_InternalLut;
@@ -128,12 +129,13 @@ namespace UnityEngine.Rendering.Universal.Internal
 
         public void Cleanup() => m_Materials.Cleanup();
 
-        public void Setup(in RenderTextureDescriptor baseDescriptor, in RenderTargetHandle source, in RenderTargetHandle destination, in RenderTargetHandle depth, in RenderTargetHandle internalLut, bool hasFinalPass, bool enableSRGBConversion)
+        public void Setup(in RenderTextureDescriptor baseDescriptor, in RenderTargetHandle source, in RenderTargetHandle bloomSource, in RenderTargetHandle destination, in RenderTargetHandle depth, in RenderTargetHandle internalLut, bool hasFinalPass, bool enableSRGBConversion)
         {
             m_Descriptor = baseDescriptor;
             m_Descriptor.useMipMap = false;
             m_Descriptor.autoGenerateMips = false;
             m_Source = source;
+            m_BloomSource = bloomSource;
             m_Destination = destination;
             m_Depth = depth;
             m_InternalLut = internalLut;
@@ -302,11 +304,13 @@ namespace UnityEngine.Rendering.Universal.Internal
             bool tempTargetUsed = false;
             bool tempTarget2Used = false;
             int source = m_Source.id;
+            int bloomSource = m_BloomSource.id;
             int destination = -1;
             bool isSceneViewCamera = cameraData.isSceneViewCamera;
 
             // Utilities to simplify intermediate target management
             int GetSource() => source;
+            int GetBloomSource() => bloomSource;
 
             int GetDestination()
             {
@@ -404,7 +408,7 @@ namespace UnityEngine.Rendering.Universal.Internal
                 if (bloomActive)
                 {
                     using (new ProfilingScope(cmd, ProfilingSampler.Get(URPProfileId.Bloom)))
-                        SetupBloom(cmd, GetSource(), m_Materials.uber);
+                        SetupBloom(cmd, GetBloomSource(), m_Materials.uber);
                 }
 
                 // Setup other effects constants
