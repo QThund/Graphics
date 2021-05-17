@@ -50,6 +50,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         private static readonly int k_SrcBlendID = Shader.PropertyToID("_SrcBlend");
         private static readonly int k_DstBlendID = Shader.PropertyToID("_DstBlend");
         private static readonly int k_FalloffIntensityID = Shader.PropertyToID("_FalloffIntensity");
+        private static readonly int k_FalloffOffsetID = Shader.PropertyToID("_FalloffOffset");
         private static readonly int k_FalloffDistanceID = Shader.PropertyToID("_FalloffDistance");
         private static readonly int k_LightColorID = Shader.PropertyToID("_LightColor");
         private static readonly int k_VolumeOpacityID = Shader.PropertyToID("_VolumeOpacity");
@@ -409,6 +410,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
             cmd.SetGlobalFloat(k_FalloffIntensityID, light.falloffIntensity);
             cmd.SetGlobalFloat(k_FalloffDistanceID, light.shapeLightFalloffSize);
+            cmd.SetGlobalVector(k_FalloffOffsetID, light.shapeLightFalloffOffset);
             cmd.SetGlobalColor(k_LightColorID, color);
             cmd.SetGlobalFloat(k_VolumeOpacityID, volumeIntensity);
         }

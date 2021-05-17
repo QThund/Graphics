@@ -100,6 +100,7 @@ namespace UnityEditor.Experimental.Rendering.Universal
             public static GUIContent pointLightSprite = EditorGUIUtility.TrTextContent("Sprite", "Specify the sprite (deprecated)");
 
             public static GUIContent shapeLightSprite = EditorGUIUtility.TrTextContent("Sprite", "Assign a Sprite which acts as a mask to create a light cookie.");
+            public static GUIContent shapeLightFalloffOffset = EditorGUIUtility.TrTextContent("Falloff Offset", "Specify the shape's falloff offset");
 
             public static GUIContent deprecatedParametricLightWarningSingle = EditorGUIUtility.TrTextContentWithIcon("Parametic Lights have been deprecated. To continue, upgrade your Parametric Light to a Freeform Light to enjoy similar light functionality.", MessageType.Warning);
             public static GUIContent deprecatedParametricLightWarningMulti = EditorGUIUtility.TrTextContentWithIcon("Parametic Lights have been deprecated. To continue, upgrade your Parametric Lights to Freeform Lights to enjoy similar light functionality.", MessageType.Warning);
@@ -154,8 +155,9 @@ namespace UnityEditor.Experimental.Rendering.Universal
         SerializedProperty m_ShapeLightFalloffSize;
         SerializedProperty m_ShapeLightParametricSides;
         SerializedProperty m_ShapeLightSprite;
+        SerializedProperty m_ShapeLightFalloffOffset;
 
-        SavedBool          m_BlendingSettingsFoldout;
+        SavedBool m_BlendingSettingsFoldout;
         SavedBool          m_ShadowsSettingsFoldout;
         SavedBool          m_VolumetricSettingsFoldout;
         SavedBool          m_NormalMapsSettingsFoldout;
@@ -225,6 +227,7 @@ namespace UnityEditor.Experimental.Rendering.Universal
             m_ShapeLightParametricRadius = serializedObject.FindProperty("m_ShapeLightParametricRadius");
             m_ShapeLightFalloffSize = serializedObject.FindProperty("m_ShapeLightFalloffSize");
             m_ShapeLightParametricSides = serializedObject.FindProperty("m_ShapeLightParametricSides");
+            m_ShapeLightFalloffOffset = serializedObject.FindProperty("m_ShapeLightFalloffOffset");
             m_ShapeLightSprite = serializedObject.FindProperty("m_LightCookieSprite");
 
             m_AnyBlendStyleEnabled = false;
@@ -551,6 +554,11 @@ namespace UnityEditor.Experimental.Rendering.Universal
                 m_ShapeLightFalloffSize.floatValue = 0;
 
             EditorGUILayout.Slider(m_FalloffIntensity, 0, 1, Styles.generalFalloffIntensity);
+
+            bool oldWideMode = EditorGUIUtility.wideMode;
+            EditorGUIUtility.wideMode = true;
+            EditorGUILayout.PropertyField(m_ShapeLightFalloffOffset, Styles.shapeLightFalloffOffset);
+            EditorGUIUtility.wideMode = oldWideMode;
 
             m_SortingLayerDropDown.OnTargetSortingLayers(serializedObject, targets, Styles.generalSortingLayerPrefixLabel, AnalyticsTrackChanges);
 

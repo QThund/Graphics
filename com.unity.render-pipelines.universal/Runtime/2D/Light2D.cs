@@ -236,7 +236,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             var hashChanged = fallOffSizeChanged || parametricRadiusChanged || parametricSidesChanged ||
                 parametricAngleOffsetChanged || spriteInstanceChanged || shapePathHashChanged || lightTypeChanged;
             // Mesh Rebuilding
-            if (hashChanged && forceUpdate)
+            if (true)//(hashChanged && forceUpdate)
             {
                 switch (m_LightType)
                 {
