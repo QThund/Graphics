@@ -408,10 +408,9 @@ namespace UnityEngine.Rendering.Universal
         /// </summary>
         /// <param name="colorTarget">Camera color target. Pass BuiltinRenderTextureType.CameraTarget if rendering to backbuffer.</param>
         /// <param name="depthTarget">Camera depth target. Pass BuiltinRenderTextureType.CameraTarget if color has depth or rendering to backbuffer.</param>
-        public void ConfigureCameraTarget(RenderTargetIdentifier colorTarget/*, RenderTargetIdentifier color2Target*/, RenderTargetIdentifier depthTarget)
+        public void ConfigureCameraTarget(RenderTargetIdentifier colorTarget, RenderTargetIdentifier depthTarget)
         {
             m_CameraColorTarget = colorTarget;
-            //m_CameraColorTarget = color2Target;
             m_CameraDepthTarget = depthTarget;
         }
 

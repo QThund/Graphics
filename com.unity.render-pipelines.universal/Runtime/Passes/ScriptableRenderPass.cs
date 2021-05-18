@@ -194,7 +194,7 @@ namespace UnityEngine.Rendering.Universal
         /// Configures render targets for this render pass. Call this instead of CommandBuffer.SetRenderTarget.
         /// This method should be called inside Configure.
         /// </summary>
-        /// <param name="colorAttachment">Color attachment identifier.</param>
+        /// <param name="colorAttachments">Color attachment identifiers.</param>
         /// <param name="depthAttachment">Depth attachment identifier.</param>
         /// <seealso cref="Configure"/>
         public void ConfigureTarget(RenderTargetIdentifier[] colorAttachments, RenderTargetIdentifier depthAttachment)

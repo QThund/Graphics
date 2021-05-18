@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Rendering.Universal.Internal;
@@ -22,10 +23,14 @@ namespace UnityEngine.Experimental.Rendering.Universal
         bool m_CreateDepthTexture;
 
         readonly RenderTargetHandle k_ColorTextureHandle;
-        readonly RenderTargetHandle k_BloomColorTextureHandle;
         readonly RenderTargetHandle k_DepthTextureHandle;
         readonly RenderTargetHandle k_AfterPostProcessColorHandle;
         readonly RenderTargetHandle k_ColorGradingLutHandle;
+
+        // CUSTOM CODE
+        List<RenderTargetHandle> k_AdditionalRenderTextureHandles = new List<RenderTargetHandle>(8);
+        protected RenderTargetIdentifier[] m_renderTargets;
+        //
 
         Material m_BlitMaterial;
 
@@ -51,10 +56,22 @@ namespace UnityEngine.Experimental.Rendering.Universal
             // We probably should declare these names in the base class,
             // as they must be the same across all ScriptableRenderer types for camera stacking to work.
             k_ColorTextureHandle.Init("_CameraColorTexture");
-            k_BloomColorTextureHandle.Init("_BloomCameraColorTexture");
             k_DepthTextureHandle.Init("_CameraDepthAttachment");
             k_AfterPostProcessColorHandle.Init("_AfterPostProcessTexture");
             k_ColorGradingLutHandle.Init("_InternalGradingLut");
+
+            // CUSTOM CODE
+            k_AdditionalRenderTextureHandles.Clear();
+
+            for (int i = 0; i < data.AdditionalRenderTargets.Count; ++i)
+            {
+                RenderTargetHandle newHandle = new RenderTargetHandle();
+                newHandle.Init(data.AdditionalRenderTargets[i].Name);
+                k_AdditionalRenderTextureHandles.Add(newHandle);
+            }
+
+            m_renderTargets = new RenderTargetIdentifier[data.AdditionalRenderTargets.Count + 1];
+            //
 
             m_Renderer2DData = data;
 
@@ -87,8 +104,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
             bool forceCreateColorTexture,
             FilterMode colorTextureFilterMode,
             CommandBuffer cmd,
+            List<Renderer2DData.RenderTargetData> additionalRenderTargets,
             out RenderTargetHandle colorTargetHandle,
-            out RenderTargetHandle bloomColorTargetHandle,
             out RenderTargetHandle depthTargetHandle)
         {
             ref var cameraTargetDescriptor = ref cameraData.cameraTargetDescriptor;
@@ -109,17 +126,38 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 colorTargetHandle = m_CreateColorTexture ? k_ColorTextureHandle : RenderTargetHandle.CameraTarget;
                 depthTargetHandle = m_CreateDepthTexture ? k_DepthTextureHandle : colorTargetHandle;
 
-                bloomColorTargetHandle = k_BloomColorTextureHandle;
-
                 if (m_CreateColorTexture)
                 {
                     var colorDescriptor = cameraTargetDescriptor;
                     colorDescriptor.depthBufferBits = m_CreateDepthTexture || !m_UseDepthStencilBuffer ? 0 : 32;
                     cmd.GetTemporaryRT(k_ColorTextureHandle.id, colorDescriptor, colorTextureFilterMode);
 
-                    var bloomColorDescriptor = cameraTargetDescriptor;
-                    bloomColorDescriptor.depthBufferBits = 0;
-                    cmd.GetTemporaryRT(k_BloomColorTextureHandle.id, bloomColorDescriptor, FilterMode.Point);
+                    // CUSTOM CODE
+                    for(int i = 0; i < additionalRenderTargets.Count; ++i)
+                    {
+                        RenderTextureDescriptor rtDescriptor = new RenderTextureDescriptor(colorDescriptor.width,
+                                                                                           colorDescriptor.height,
+                                                                                           additionalRenderTargets[i].ColorFormat,
+                                                                                           additionalRenderTargets[i].DepthBufferBits,
+                                                                                           additionalRenderTargets[i].MipCount);
+                        rtDescriptor.autoGenerateMips = additionalRenderTargets[i].AutoGenerateMips;
+                        rtDescriptor.bindMS = additionalRenderTargets[i].BindMS;
+                        rtDescriptor.dimension = additionalRenderTargets[i].Dimension;
+                        rtDescriptor.enableRandomWrite = additionalRenderTargets[i].EnableRandomWrite;
+                        rtDescriptor.graphicsFormat = additionalRenderTargets[i].GraphicsFormat;
+                        rtDescriptor.memoryless = additionalRenderTargets[i].Memoryless;
+                        rtDescriptor.msaaSamples = additionalRenderTargets[i].MsaaSamples;
+                        rtDescriptor.shadowSamplingMode = additionalRenderTargets[i].ShadowSamplingMode;
+                        rtDescriptor.sRGB = additionalRenderTargets[i].sRGB;
+                        rtDescriptor.stencilFormat = additionalRenderTargets[i].StencilFormat;
+                        rtDescriptor.useDynamicScale = additionalRenderTargets[i].UseDynamicScale;
+                        rtDescriptor.useMipMap = additionalRenderTargets[i].UseMipMap;
+                        rtDescriptor.volumeDepth = additionalRenderTargets[i].VolumeDepth;
+                        rtDescriptor.vrUsage = additionalRenderTargets[i].VrUsage;
+
+                        cmd.GetTemporaryRT(k_AdditionalRenderTextureHandles[i].id, rtDescriptor, additionalRenderTargets[i].TextureFilter);
+                    }
+                    //
                 }
 
                 if (m_CreateDepthTexture)
@@ -139,7 +177,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 m_CreateDepthTexture = true;
 
                 colorTargetHandle = k_ColorTextureHandle;
-                bloomColorTargetHandle = k_BloomColorTextureHandle;
                 depthTargetHandle = k_DepthTextureHandle;
             }
         }
@@ -186,19 +223,21 @@ namespace UnityEngine.Experimental.Rendering.Universal
             }
 
             RenderTargetHandle colorTargetHandle;
-            RenderTargetHandle bloomColorTargetHandle;
             RenderTargetHandle depthTargetHandle;
 
             CommandBuffer cmd = CommandBufferPool.Get();
             using (new ProfilingScope(cmd, m_ProfilingSampler))
             {
                 CreateRenderTextures(ref cameraData, ppcUsesOffscreenRT, colorTextureFilterMode, cmd,
-                    out colorTargetHandle, out bloomColorTargetHandle, out depthTargetHandle);
+                    //  CUSTOM CODE
+                    m_Renderer2DData.AdditionalRenderTargets,
+                    //
+                    out colorTargetHandle, out depthTargetHandle);
             }
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
 
-            ConfigureCameraTarget(colorTargetHandle.Identifier()/*, color2TargetHandle.Identifier()*/, depthTargetHandle.Identifier());
+            ConfigureCameraTarget(colorTargetHandle.Identifier(), depthTargetHandle.Identifier());
 
             // We generate color LUT in the base camera only. This allows us to not break render pass execution for overlay cameras.
             if (stackHasPostProcess && cameraData.renderType == CameraRenderType.Base)
@@ -207,7 +246,21 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 EnqueuePass(m_ColorGradingLutPass);
             }
 
-            m_Render2DLightingPass.ConfigureTarget(new RenderTargetIdentifier[]{ colorTargetHandle.Identifier(), bloomColorTargetHandle.Identifier() }, depthTargetHandle.Identifier());
+            // CUSTOM CODE
+            m_renderTargets[0] = colorTargetHandle.Identifier();
+
+            for (int i = 1; i < m_Renderer2DData.AdditionalRenderTargets.Count + 1; ++i)
+            {
+                m_renderTargets[i] = k_AdditionalRenderTextureHandles[i - 1].Identifier();
+            }
+            //
+
+            m_Render2DLightingPass.ConfigureTarget(
+                                                    // CUSTOM CODE
+                                                    m_renderTargets,
+                                                    //
+                                                    depthTargetHandle.Identifier());
+
             EnqueuePass(m_Render2DLightingPass);
 
             // When using Upscale Render Texture on a Pixel Perfect Camera, we want all post-processing effects done with a low-res RT,
@@ -224,7 +277,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 m_PostProcessPass.Setup(
                     cameraTargetDescriptor,
                     colorTargetHandle,
-                    bloomColorTargetHandle,
+                    // CUSTOM CODE
+                    k_AdditionalRenderTextureHandles[m_Renderer2DData.GetIndexOfRenderTarget("_BloomCameraColorTexture")],
+                    //
                     postProcessDestHandle,
                     depthTargetHandle,
                     k_ColorGradingLutHandle,
@@ -266,7 +321,13 @@ namespace UnityEngine.Experimental.Rendering.Universal
             if (m_CreateColorTexture)
             {
                 cmd.ReleaseTemporaryRT(k_ColorTextureHandle.id);
-                cmd.ReleaseTemporaryRT(k_BloomColorTextureHandle.id);
+
+                // CUSTOM CODE
+                for(int i = 0; i < k_AdditionalRenderTextureHandles.Count; ++i)
+                {
+                    cmd.ReleaseTemporaryRT(k_AdditionalRenderTextureHandles[i].id);
+                }
+                //
             }
             
             if (m_CreateDepthTexture)

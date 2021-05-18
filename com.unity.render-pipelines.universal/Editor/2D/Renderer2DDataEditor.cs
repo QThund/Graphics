@@ -24,6 +24,10 @@ namespace UnityEditor.Experimental.Rendering.Universal
             public static readonly GUIContent blendFactorAdditive = EditorGUIUtility.TrTextContent("Additive");
             public static readonly GUIContent useDepthStencilBuffer = EditorGUIUtility.TrTextContent("Use Depth/Stencil Buffer", "Uncheck this when you are certain you don't use any feature that requires the depth/stencil buffer (e.g. Sprite Mask). Not using the depth/stencil buffer may improve performance, especially on mobile platforms.");
             public static readonly GUIContent postProcessData = EditorGUIUtility.TrTextContent("Post-processing Data", "Resources (textures, shaders, etc.) required by post-processing effects.");
+
+            // CUSTOM CODE
+            public static readonly GUIContent renderTargets = EditorGUIUtility.TrTextContent("Additional render targets", "A list of render targets to be set when rendering 2D geometry, in the same order. The first texture must be accessed by the index 1 in the shaders, as the index 0 will be occupied by a default color texture.");
+            //
         }
 
         struct LightBlendStyleProps
@@ -46,6 +50,10 @@ namespace UnityEditor.Experimental.Rendering.Universal
         SerializedProperty m_PostProcessData;
         SerializedProperty m_DefaultMaterialType;
         SerializedProperty m_DefaultCustomMaterial;
+
+        // CUSTOM CODE
+        SerializedProperty m_renderTargets;
+        //
 
         Analytics.Renderer2DAnalytics m_Analytics = Analytics.Renderer2DAnalytics.instance;
         Renderer2DData m_Renderer2DData;
@@ -99,6 +107,11 @@ namespace UnityEditor.Experimental.Rendering.Universal
             m_PostProcessData = serializedObject.FindProperty("m_PostProcessData");
             m_DefaultMaterialType = serializedObject.FindProperty("m_DefaultMaterialType");
             m_DefaultCustomMaterial = serializedObject.FindProperty("m_DefaultCustomMaterial");
+
+            // CUSTOM CODE
+            m_renderTargets = serializedObject.FindProperty("m_renderTargets");
+            SerializedProperty yeah = serializedObject.FindProperty("yeah");
+            //
         }
 
         private void OnDestroy()
@@ -181,6 +194,10 @@ namespace UnityEditor.Experimental.Rendering.Universal
             if(m_DefaultMaterialType.intValue == (int)Renderer2DData.Renderer2DDefaultMaterialType.Custom)
                 EditorGUILayout.PropertyField(m_DefaultCustomMaterial, Styles.defaultCustomMaterial);
 
+            // CUSTOM CODE
+            EditorGUILayout.PropertyField(m_renderTargets, Styles.renderTargets);
+            //
+            
             m_WasModified |= serializedObject.hasModifiedProperties;
             serializedObject.ApplyModifiedProperties();
         }

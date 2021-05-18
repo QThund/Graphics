@@ -175,7 +175,11 @@ namespace UnityEngine.Experimental.Rendering.Universal
                             this.ClearDirtyLighting(cmd, lightStats.blendStylesUsed);
                         }
 
-                        CoreUtils.SetRenderTarget(cmd, colorAttachments, depthAttachment, ClearFlag.None, Color.white);
+                        CoreUtils.SetRenderTarget(cmd,
+                            // CUSTOM CODE
+                            colorAttachments,
+                            //
+                            depthAttachment, ClearFlag.None, Color.white);
                         context.ExecuteCommandBuffer(cmd);
 
                         Profiler.BeginSample("RenderSpritesWithLighting - Draw Transparent Renderers");
