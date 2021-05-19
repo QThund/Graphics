@@ -14,7 +14,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
         FinalBlitPass m_FinalBlitPass;
         PostProcessPass m_FinalPostProcessPass;
         Light2DCullResult m_LightCullResult;
+        // CUSTOM CODE
         CustomPostProcessPass m_CustomPostProcessPass;
+        DisplacementPostProcessPass m_DisplacementPostProcessPass;
+        //
 
         private static readonly ProfilingSampler m_ProfilingSampler = new ProfilingSampler("Create Camera Textures");
 
@@ -49,7 +52,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
             m_FinalPostProcessPass = new PostProcessPass(RenderPassEvent.AfterRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_PixelPerfectBackgroundPass = new PixelPerfectBackgroundPass(RenderPassEvent.AfterRendering + 1);
             m_FinalBlitPass = new FinalBlitPass(RenderPassEvent.AfterRendering + 1, m_BlitMaterial);
+            // CUSTOM CODE
             m_CustomPostProcessPass = new CustomPostProcessPass(RenderPassEvent.AfterRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
+            m_DisplacementPostProcessPass = new DisplacementPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
+            //
 
             m_UseDepthStencilBuffer = data.useDepthStencilBuffer;
 
@@ -271,6 +277,11 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
             if (cameraData.postProcessEnabled)
             {
+                // CUSTOM CODE
+                m_DisplacementPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle, k_AdditionalRenderTextureHandles[m_Renderer2DData.GetIndexOfRenderTarget("_DisplacementTexture")]);
+                EnqueuePass(m_DisplacementPostProcessPass);
+                //
+
                 RenderTargetHandle postProcessDestHandle =
                     lastCameraInStack && !ppcUpscaleRT && !requireFinalPostProcessPass ? RenderTargetHandle.CameraTarget : k_AfterPostProcessColorHandle;
 
@@ -292,9 +303,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
             if (ppc != null && ppc.isRunning && (ppc.cropFrameX || ppc.cropFrameY))
                 EnqueuePass(m_PixelPerfectBackgroundPass);
-
-            m_CustomPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle);
-            EnqueuePass(m_CustomPostProcessPass);
 
             if (requireFinalPostProcessPass)
             {
