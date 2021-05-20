@@ -788,7 +788,11 @@ namespace UnityEngine.Rendering.Universal
                     // Clear camera color render-target separately from the rest of the render-targets.
 
                     if ((cameraClearFlag & ClearFlag.Color) != 0)
-                        SetRenderTarget(cmd, renderPass.colorAttachments[cameraColorTargetIndex], renderPass.depthAttachment, ClearFlag.Color, CoreUtils.ConvertSRGBToActiveColorSpace(camera.backgroundColor));
+                        SetRenderTarget(cmd,
+                            // CUSTOM CODE
+                            renderPass.colorAttachments,
+                            //
+                            renderPass.depthAttachment, ClearFlag.Color, CoreUtils.ConvertSRGBToActiveColorSpace(camera.backgroundColor));
 
                     if ((renderPass.clearFlag & ClearFlag.Color) != 0)
                     {
