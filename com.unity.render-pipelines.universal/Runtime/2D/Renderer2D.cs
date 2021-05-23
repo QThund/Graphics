@@ -15,8 +15,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
         PostProcessPass m_FinalPostProcessPass;
         Light2DCullResult m_LightCullResult;
         // CUSTOM CODE
-        CustomPostProcessPass m_CustomPostProcessPass;
         DisplacementPostProcessPass m_DisplacementPostProcessPass;
+        ScreenBorderPostProcessPass m_ScreenBorderPostProcessPass;
         //
 
         private static readonly ProfilingSampler m_ProfilingSampler = new ProfilingSampler("Create Camera Textures");
@@ -53,8 +53,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
             m_PixelPerfectBackgroundPass = new PixelPerfectBackgroundPass(RenderPassEvent.AfterRendering + 1);
             m_FinalBlitPass = new FinalBlitPass(RenderPassEvent.AfterRendering + 1, m_BlitMaterial);
             // CUSTOM CODE
-            m_CustomPostProcessPass = new CustomPostProcessPass(RenderPassEvent.AfterRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_DisplacementPostProcessPass = new DisplacementPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
+            m_ScreenBorderPostProcessPass = new ScreenBorderPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             //
 
             m_UseDepthStencilBuffer = data.useDepthStencilBuffer;
@@ -280,6 +280,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 // CUSTOM CODE
                 m_DisplacementPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle, k_AdditionalRenderTextureHandles[m_Renderer2DData.GetIndexOfRenderTarget("_DisplacementTexture")]);
                 EnqueuePass(m_DisplacementPostProcessPass);
+
+                m_ScreenBorderPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle);
+                EnqueuePass(m_ScreenBorderPostProcessPass);
                 //
 
                 RenderTargetHandle postProcessDestHandle =
