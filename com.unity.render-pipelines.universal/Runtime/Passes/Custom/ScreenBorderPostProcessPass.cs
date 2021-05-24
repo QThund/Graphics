@@ -71,21 +71,25 @@ namespace UnityEngine.Rendering.Universal.Internal
 
         void Render(CommandBuffer cmd, ref RenderingData renderingData)
         {
-            cmd.GetTemporaryRT(Shader.PropertyToID("_TempTarget"), GetCompatibleDescriptor(), FilterMode.Bilinear);
-            int destination = Shader.PropertyToID("_TempTarget");
-
             ScreenBorder screenBorder = VolumeManager.instance.stack.GetComponent<ScreenBorder>();
 
-            m_postProcessMaterial.SetFloat("_BorderWidth", screenBorder.BorderWidth.value);
-            m_postProcessMaterial.SetFloat("_BorderGradientPower", screenBorder.BorderGradientPower.value);
-            m_postProcessMaterial.SetColor("_BorderColor", screenBorder.BorderColor.value);
+            if(screenBorder.IsActive() && !renderingData.cameraData.isSceneViewCamera)
+            {
+                cmd.GetTemporaryRT(Shader.PropertyToID("_TempTarget"), GetCompatibleDescriptor(), FilterMode.Bilinear);
+                int destination = Shader.PropertyToID("_TempTarget");
 
-            RenderingUtils.Blit(
-                        cmd, m_Source.id, destination, m_postProcessMaterial, 0, false,
-                        RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
-                        RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare);
+                m_postProcessMaterial.SetFloat("_BorderWidth", screenBorder.BorderWidth.value);
+                m_postProcessMaterial.SetFloat("_BorderGradientPower", screenBorder.BorderGradientPower.value);
+                m_postProcessMaterial.SetColor("_BorderColor", screenBorder.BorderColor.value);
+                m_postProcessMaterial.SetTexture("_BorderTexture", screenBorder.BorderTexture.value);
 
-            RenderingUtils.Blit(cmd, destination, m_Source.id, m_BlitMaterial);
+                RenderingUtils.Blit(
+                            cmd, m_Source.id, destination, m_postProcessMaterial, 0, false,
+                            RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
+                            RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare);
+
+                RenderingUtils.Blit(cmd, destination, m_Source.id, m_BlitMaterial);
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ Shader "Game/S_ScreenBorderPostProcess"
         _BorderWidth ("Border Width", Float) = 30.0
         _BorderColor ("Border Color", Color) = (1.0, 0.0, 0.0, 1.0)
         _BorderGradientPower ("Border Gradient Power", Float) = 2.0
+        _BorderTexture("Border Texture", 2D) = "white" {}
     }
     SubShader
     {
@@ -44,6 +45,7 @@ Shader "Game/S_ScreenBorderPostProcess"
             float _BorderWidth;
             float4 _BorderColor;
             float _BorderGradientPower;
+            sampler2D _BorderTexture;
 
             float4 frag (v2f i) : SV_Target
             {
@@ -71,8 +73,19 @@ Shader "Game/S_ScreenBorderPostProcess"
                     gradient.y = (i.vertex.y - _ScreenParams.y + _BorderWidth) / _BorderWidth;
                 }
 
-                _BorderColor.a *= (gradient.x < 0.0f && gradient.y < 0.0f) ? 0.0f : max(gradient.x, gradient.y);
+                float4 textureColor = tex2D(_BorderTexture, i.uv);
 
+                _BorderColor.a *= max(textureColor.a - 0.4f, 0.0f);
+                //_BorderColor.a *= (gradient.x < 0.0f && gradient.y < 0.0f) ? 0.0f : max(gradient.x, gradient.y);
+
+                //_BorderColor.a = (length((_ScreenParams.xy * 0.5f) - i.vertex.xy) - _ScreenParams.xy * 0.5f + _BorderWidth) / _BorderWidth;
+
+                /*gradient.x = abs((_ScreenParams.x * 0.5f) - i.vertex.x);// - _ScreenParams.x * 0.5f + _BorderWidth;
+                gradient.y = abs((_ScreenParams.y * 0.5f) - i.vertex.y);// - _ScreenParams.y * 0.5f + _BorderWidth;
+                _BorderColor.a = (gradient.x + gradient.y) * 0.5f / _BorderWidth;
+                */
+                _BorderColor.a *= clamp((length(i.uv.xy - float2(0.5f, 0.5f)) - 0.5f + (_BorderWidth / _ScreenParams.x)) / (_BorderWidth / _ScreenParams.x), 0.0f, 1.0f);
+                
                 if (_BorderColor.a == 0.0f)
                 {
                     discard;

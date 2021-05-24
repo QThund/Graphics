@@ -14,10 +14,13 @@ namespace UnityEngine.Rendering.Universal
         [Tooltip("The color of the border. The alpha component affects its transparency.")]
         public ColorParameter BorderColor = new ColorParameter(Color.white, true, false, true);
 
+        public TextureParameter BorderTexture = new TextureParameter(null);
+
         public bool IsActive()
         {
-            return BorderWidth.value != 0f
-                || BorderColor.value.a != 0f;
+            return active &&
+                   BorderWidth.value != 0f &&
+                   BorderColor.value.a != 0f;
         }
 
         public bool IsTileCompatible() => true;
