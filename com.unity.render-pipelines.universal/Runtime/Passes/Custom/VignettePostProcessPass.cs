@@ -5,7 +5,7 @@ namespace UnityEngine.Rendering.Universal.Internal
     /// <summary>
     /// Renders a border around the screen with a post-processing effect.
     /// </summary>
-    public class ScreenBorderPostProcessPass : ScriptableRenderPass
+    public class VignettePostProcessPass : ScriptableRenderPass
     {
         RenderTextureDescriptor m_Descriptor;
         RenderTargetHandle m_Source;
@@ -15,23 +15,23 @@ namespace UnityEngine.Rendering.Universal.Internal
         {
             get
             {
-                if (m_postProcessMaterial == null)
+                if(m_postProcessMaterial == null)
                 {
-                    m_postProcessMaterial = new Material(Shader.Find("Game/S_ScreenBorderPostProcess"));
+                    m_postProcessMaterial = new Material(Shader.Find("Game/S_VignettePostProcess"));
                 }
 
                 return m_postProcessMaterial;
             }
         }
 
-        const string k_RenderPostProcessingTag = "Render Screen border PostProcessing Effect";
+        const string k_RenderPostProcessingTag = "Render Vignette PostProcessing Effect";
         private static readonly ProfilingSampler m_ProfilingRenderPostProcessing = new ProfilingSampler(k_RenderPostProcessingTag);
 
         PostProcessData m_Data;
 
         Material m_BlitMaterial;
 
-        public ScreenBorderPostProcessPass(RenderPassEvent evt, PostProcessData data, Material blitMaterial)
+        public VignettePostProcessPass(RenderPassEvent evt, PostProcessData data, Material blitMaterial)
         {
             base.profilingSampler = new ProfilingSampler(nameof(PostProcessPass));
             renderPassEvent = evt;
@@ -83,16 +83,18 @@ namespace UnityEngine.Rendering.Universal.Internal
 
         void Render(CommandBuffer cmd, ref RenderingData renderingData)
         {
-            ScreenBorder screenBorder = VolumeManager.instance.stack.GetComponent<ScreenBorder>();
+            CustomVignette customVignette = VolumeManager.instance.stack.GetComponent<CustomVignette>();
 
-            if(screenBorder.IsActive() && !renderingData.cameraData.isSceneViewCamera)
+            if(customVignette.IsActive() && !renderingData.cameraData.isSceneViewCamera)
             {
                 cmd.GetTemporaryRT(Shader.PropertyToID("_TempTarget"), GetCompatibleDescriptor(), FilterMode.Bilinear);
                 int destination = Shader.PropertyToID("_TempTarget");
 
-                PostProcessMaterial.SetFloat("_BorderWidth", screenBorder.BorderWidth.value);
-                PostProcessMaterial.SetFloat("_BorderGradientPower", screenBorder.BorderGradientPower.value);
-                PostProcessMaterial.SetColor("_BorderColor", screenBorder.BorderColor.value);
+                PostProcessMaterial.SetFloat("_VignetteRadius", customVignette.VignetteRadius.value);
+                PostProcessMaterial.SetFloat("_VignetteGradientPower", customVignette.VignetteGradientPower.value);
+                PostProcessMaterial.SetColor("_VignetteColor", customVignette.VignetteColor.value);
+                PostProcessMaterial.SetTexture("_VignetteTexture", customVignette.VignetteTexture.value);
+                PostProcessMaterial.SetFloat("_TextureAlphaClipThreshold", customVignette.TextureAlphaClipThreshold.value);
 
                 RenderingUtils.Blit(
                             cmd, m_Source.id, destination, PostProcessMaterial, 0, false,

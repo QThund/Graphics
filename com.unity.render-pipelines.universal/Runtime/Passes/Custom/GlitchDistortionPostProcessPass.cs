@@ -3,9 +3,9 @@ using UnityEngine.Experimental.Rendering;
 namespace UnityEngine.Rendering.Universal.Internal
 {
     /// <summary>
-    /// Renders a border around the screen with a post-processing effect.
+    /// Renders a distorted version of the image with a post-processing effect.
     /// </summary>
-    public class ScreenBorderPostProcessPass : ScriptableRenderPass
+    public class GlitchDistortionPostProcessPass : ScriptableRenderPass
     {
         RenderTextureDescriptor m_Descriptor;
         RenderTargetHandle m_Source;
@@ -17,21 +17,21 @@ namespace UnityEngine.Rendering.Universal.Internal
             {
                 if (m_postProcessMaterial == null)
                 {
-                    m_postProcessMaterial = new Material(Shader.Find("Game/S_ScreenBorderPostProcess"));
+                    m_postProcessMaterial = new Material(Shader.Find("Game/S_GlitchDistortionPostProcess"));
                 }
 
                 return m_postProcessMaterial;
             }
         }
 
-        const string k_RenderPostProcessingTag = "Render Screen border PostProcessing Effect";
+        const string k_RenderPostProcessingTag = "Render Glitch distortion PostProcessing Effect";
         private static readonly ProfilingSampler m_ProfilingRenderPostProcessing = new ProfilingSampler(k_RenderPostProcessingTag);
 
         PostProcessData m_Data;
 
         Material m_BlitMaterial;
 
-        public ScreenBorderPostProcessPass(RenderPassEvent evt, PostProcessData data, Material blitMaterial)
+        public GlitchDistortionPostProcessPass(RenderPassEvent evt, PostProcessData data, Material blitMaterial)
         {
             base.profilingSampler = new ProfilingSampler(nameof(PostProcessPass));
             renderPassEvent = evt;
@@ -83,16 +83,15 @@ namespace UnityEngine.Rendering.Universal.Internal
 
         void Render(CommandBuffer cmd, ref RenderingData renderingData)
         {
-            ScreenBorder screenBorder = VolumeManager.instance.stack.GetComponent<ScreenBorder>();
+            GlitchDistortion glitchDistortion = VolumeManager.instance.stack.GetComponent<GlitchDistortion>();
 
-            if(screenBorder.IsActive() && !renderingData.cameraData.isSceneViewCamera)
+            if(glitchDistortion.IsActive() && !renderingData.cameraData.isSceneViewCamera)
             {
                 cmd.GetTemporaryRT(Shader.PropertyToID("_TempTarget"), GetCompatibleDescriptor(), FilterMode.Bilinear);
                 int destination = Shader.PropertyToID("_TempTarget");
 
-                PostProcessMaterial.SetFloat("_BorderWidth", screenBorder.BorderWidth.value);
-                PostProcessMaterial.SetFloat("_BorderGradientPower", screenBorder.BorderGradientPower.value);
-                PostProcessMaterial.SetColor("_BorderColor", screenBorder.BorderColor.value);
+                PostProcessMaterial.SetTexture("_NoiseTexture", glitchDistortion.NoiseTexture);
+                PostProcessMaterial.SetFloat("_DisplacementLength", glitchDistortion.DisplacementLength.value);
 
                 RenderingUtils.Blit(
                             cmd, m_Source.id, destination, PostProcessMaterial, 0, false,

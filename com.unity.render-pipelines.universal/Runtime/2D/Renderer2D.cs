@@ -17,6 +17,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
         // CUSTOM CODE
         DisplacementPostProcessPass m_DisplacementPostProcessPass;
         ScreenBorderPostProcessPass m_ScreenBorderPostProcessPass;
+        VignettePostProcessPass m_VignettePostProcessPass;
+        GlitchDistortionPostProcessPass m_GlitchDistortionPostProcessPass;
         //
 
         private static readonly ProfilingSampler m_ProfilingSampler = new ProfilingSampler("Create Camera Textures");
@@ -55,6 +57,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
             // CUSTOM CODE
             m_DisplacementPostProcessPass = new DisplacementPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_ScreenBorderPostProcessPass = new ScreenBorderPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
+            m_VignettePostProcessPass = new VignettePostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
+            m_GlitchDistortionPostProcessPass = new GlitchDistortionPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             //
 
             m_UseDepthStencilBuffer = data.useDepthStencilBuffer;
@@ -280,9 +284,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 // CUSTOM CODE
                 m_DisplacementPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle, k_AdditionalRenderTextureHandles[m_Renderer2DData.GetIndexOfRenderTarget("_DisplacementTexture")]);
                 EnqueuePass(m_DisplacementPostProcessPass);
-
-                m_ScreenBorderPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle);
-                EnqueuePass(m_ScreenBorderPostProcessPass);
                 //
 
                 RenderTargetHandle postProcessDestHandle =
@@ -306,6 +307,20 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
             if (ppc != null && ppc.isRunning && (ppc.cropFrameX || ppc.cropFrameY))
                 EnqueuePass(m_PixelPerfectBackgroundPass);
+
+            // CUSTOM CODE
+            if (cameraData.postProcessEnabled)
+            {
+                m_GlitchDistortionPostProcessPass.Setup(cameraTargetDescriptor, k_ColorTextureHandle);
+                EnqueuePass(m_GlitchDistortionPostProcessPass);
+
+                m_ScreenBorderPostProcessPass.Setup(cameraTargetDescriptor, k_ColorTextureHandle);
+                EnqueuePass(m_ScreenBorderPostProcessPass);
+
+                m_VignettePostProcessPass.Setup(cameraTargetDescriptor, k_ColorTextureHandle);
+                EnqueuePass(m_VignettePostProcessPass);
+            }
+            //
 
             if (requireFinalPostProcessPass)
             {
