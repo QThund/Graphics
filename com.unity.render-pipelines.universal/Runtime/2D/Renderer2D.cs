@@ -19,6 +19,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         ScreenBorderPostProcessPass m_ScreenBorderPostProcessPass;
         VignettePostProcessPass m_VignettePostProcessPass;
         GlitchDistortionPostProcessPass m_GlitchDistortionPostProcessPass;
+        ScreenScalingPostProcessPass m_ScreenScalingPostProcessPass;
         //
 
         private static readonly ProfilingSampler m_ProfilingSampler = new ProfilingSampler("Create Camera Textures");
@@ -59,6 +60,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             m_ScreenBorderPostProcessPass = new ScreenBorderPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_VignettePostProcessPass = new VignettePostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_GlitchDistortionPostProcessPass = new GlitchDistortionPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
+            m_ScreenScalingPostProcessPass = new ScreenScalingPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             //
 
             m_UseDepthStencilBuffer = data.useDepthStencilBuffer;
@@ -319,6 +321,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
                 m_VignettePostProcessPass.Setup(cameraTargetDescriptor, k_ColorTextureHandle);
                 EnqueuePass(m_VignettePostProcessPass);
+
+                m_ScreenScalingPostProcessPass.Setup(cameraTargetDescriptor, k_ColorTextureHandle);
+                EnqueuePass(m_ScreenScalingPostProcessPass);
             }
             //
 
