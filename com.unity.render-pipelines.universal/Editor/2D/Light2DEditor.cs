@@ -72,6 +72,9 @@ namespace UnityEditor.Experimental.Rendering.Universal
             public static GUIContent generalLightIntensity = EditorGUIUtility.TrTextContent("Intensity", "Specify the light color's intensity");
             public static GUIContent generalUseNormalMap = EditorGUIUtility.TrTextContent("Use Normal Map", "Specify whether the light considers normal maps");
             public static GUIContent generalVolumeOpacity = EditorGUIUtility.TrTextContent("Volume Opacity", "Specify the light's volumetric light volume opacity");
+            // CUSTOM CODE
+            public static GUIContent generalVolumeTextures = EditorGUIUtility.TrTextContent("Volume Textures", "Specify the light's volumetric textures");
+            //
             public static GUIContent generalBlendStyle = EditorGUIUtility.TrTextContent("Blend Style", "Specify the blend style");
             public static GUIContent generalLightOverlapMode = EditorGUIUtility.TrTextContent("Alpha Blend on Overlap", "Use alpha blending instead of additive blending when this light overlaps others");
             public static GUIContent generalLightOrder = EditorGUIUtility.TrTextContent("Light Order", "The relative order in which lights of the same blend style get rendered.");
@@ -135,6 +138,9 @@ namespace UnityEditor.Experimental.Rendering.Universal
         SerializedProperty m_ShapeLightParametricAngleOffset;
         SerializedProperty m_ShapeLightFalloffOffset;
         SerializedProperty m_ShapeLightSprite;
+        // CUSTOM CODE
+        SerializedProperty m_VolumeTextures;
+        //
 
         int[]           m_BlendStyleIndices;
         GUIContent[]    m_BlendStyleNames;
@@ -195,6 +201,9 @@ namespace UnityEditor.Experimental.Rendering.Universal
             m_ShapeLightParametricAngleOffset = serializedObject.FindProperty("m_ShapeLightParametricAngleOffset");
             m_ShapeLightFalloffOffset = serializedObject.FindProperty("m_ShapeLightFalloffOffset");
             m_ShapeLightSprite = serializedObject.FindProperty("m_LightCookieSprite");
+            // CUSTOM CODE
+            m_VolumeTextures = serializedObject.FindProperty("m_VolumeTextures");
+            //
 
             m_AnyBlendStyleEnabled = false;
             var blendStyleIndices = new List<int>();
@@ -305,6 +314,10 @@ namespace UnityEditor.Experimental.Rendering.Universal
                     EditorGUILayout.PropertyField(m_ShapeLightFalloffOffset, Styles.shapeLightFalloffOffset);
                     EditorGUIUtility.wideMode = oldWideMode;
                 }
+
+                // CUSTOM CODE
+                EditorGUILayout.PropertyField(m_VolumeTextures, Styles.generalVolumeTextures);
+                //
             }
         }
 

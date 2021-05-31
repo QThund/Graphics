@@ -110,7 +110,6 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
             // CUSTOM CODE
             m_renderTargets = serializedObject.FindProperty("m_renderTargets");
-            SerializedProperty yeah = serializedObject.FindProperty("yeah");
             //
         }
 

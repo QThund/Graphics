@@ -54,6 +54,25 @@ namespace UnityEngine.Experimental.Rendering.Universal
         private static readonly int k_FalloffOffsetID = Shader.PropertyToID("_FalloffOffset");
         private static readonly int k_LightColorID = Shader.PropertyToID("_LightColor");
         private static readonly int k_VolumeOpacityID = Shader.PropertyToID("_VolumeOpacity");
+        // CUSTOM CODE
+        private const int VOLUME_TEXTURE_COUNT = 3;
+        private static readonly int k_VolumeTextureCount = Shader.PropertyToID("_VolumeTextureCount");
+        private static readonly int[] k_VolumeTextureIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0"),
+                                                                      Shader.PropertyToID("_VolumeTexture1"),
+                                                                      Shader.PropertyToID("_VolumeTexture2")};
+        private static readonly int[] k_VolumeTexturePowerIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0Power"),
+                                                                           Shader.PropertyToID("_VolumeTexture1Power"),
+                                                                           Shader.PropertyToID("_VolumeTexture2Power")};
+        private static readonly int[] k_VolumeTextureScaleIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0Scale"),
+                                                                           Shader.PropertyToID("_VolumeTexture1Scale"),
+                                                                           Shader.PropertyToID("_VolumeTexture2Scale")};
+        private static readonly int[] k_VolumeTextureTimeScaleIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0TimeScale"),
+                                                                               Shader.PropertyToID("_VolumeTexture1TimeScale"),
+                                                                               Shader.PropertyToID("_VolumeTexture2TimeScale")};
+        private static readonly int[] k_VolumeTextureDirectionIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0Direction"),
+                                                                               Shader.PropertyToID("_VolumeTexture1Direction"),
+                                                                               Shader.PropertyToID("_VolumeTexture2Direction")};
+        //
         private static readonly int k_CookieTexID = Shader.PropertyToID("_CookieTex");
         private static readonly int k_FalloffLookupID = Shader.PropertyToID("_FalloffLookup");
         private static readonly int k_LightPositionID = Shader.PropertyToID("_LightPosition");
@@ -234,10 +253,23 @@ namespace UnityEngine.Experimental.Rendering.Universal
                                     cmd.SetGlobalVector(k_FalloffOffsetID, light.shapeLightFalloffOffset);
                                     cmd.SetGlobalColor(k_LightColorID, light.intensity * light.color);
                                     cmd.SetGlobalFloat(k_VolumeOpacityID, light.volumeOpacity);
-
+                                    
                                     // Is this needed
                                     if (light.useNormalMap || light.lightType == Light2D.LightType.Point)
                                         SetPointLightShaderGlobals(cmd, light);
+
+                                    // CUSTOM CODE
+                                    cmd.SetGlobalFloat(k_VolumeTextureCount, light.volumeTextures.Length);
+
+                                    for (int j = 0; j < light.volumeTextures.Length; ++j)
+                                    {
+                                        cmd.SetGlobalTexture(k_VolumeTextureIDs[j], light.volumeTextures[j].Texture);
+                                        cmd.SetGlobalVector(k_VolumeTextureDirectionIDs[j], light.volumeTextures[j].Direction);
+                                        cmd.SetGlobalFloat(k_VolumeTexturePowerIDs[j], light.volumeTextures[j].Power);
+                                        cmd.SetGlobalFloat(k_VolumeTextureScaleIDs[j], light.volumeTextures[j].Scale);
+                                        cmd.SetGlobalFloat(k_VolumeTextureTimeScaleIDs[j], light.volumeTextures[j].TimeScale);
+                                    }
+                                    //
 
                                     // Could be combined...
                                     if (light.lightType == Light2D.LightType.Parametric || light.lightType == Light2D.LightType.Freeform || light.lightType == Light2D.LightType.Sprite)
