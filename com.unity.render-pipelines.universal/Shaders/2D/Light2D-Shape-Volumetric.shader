@@ -121,8 +121,8 @@ Shader "Hidden/Light2D-Shape-Volumetric"
                 // CUSTOM CODE
                 float2 position = (i.positionCS.xy / _ScreenParams.xy - i.originPos.xy) ;
                 float volumeTexture0Alpha = _VolumeTextureCount == 0.0f ? 0.0f : SAMPLE_TEXTURE2D(_VolumeTexture0, sampler_VolumeTexture0, position  / _VolumeTexture0Scale + _VolumeTexture0Direction * _Time * _VolumeTexture0TimeScale).a;
-                float volumeTexture1Alpha = _VolumeTextureCount  < 1.0f ? 0.0f : SAMPLE_TEXTURE2D(_VolumeTexture1, sampler_VolumeTexture1, position  / _VolumeTexture1Scale + _VolumeTexture1Direction * _Time * _VolumeTexture1TimeScale).a;
-                float volumeTexture2Alpha = _VolumeTextureCount  < 2.0f ? 0.0f : SAMPLE_TEXTURE2D(_VolumeTexture2, sampler_VolumeTexture2, position  / _VolumeTexture2Scale + _VolumeTexture2Direction * _Time * _VolumeTexture2TimeScale).a;
+                float volumeTexture1Alpha = _VolumeTextureCount  < 1.5f ? 0.0f : SAMPLE_TEXTURE2D(_VolumeTexture1, sampler_VolumeTexture1, position  / _VolumeTexture1Scale + _VolumeTexture1Direction * _Time * _VolumeTexture1TimeScale).a;
+                float volumeTexture2Alpha = _VolumeTextureCount  < 2.5f ? 0.0f : SAMPLE_TEXTURE2D(_VolumeTexture2, sampler_VolumeTexture2, position  / _VolumeTexture2Scale + _VolumeTexture2Direction * _Time * _VolumeTexture2TimeScale).a;
                 float volumeAlpha = pow(volumeTexture0Alpha, _VolumeTexture0Power) +
                                     pow(volumeTexture1Alpha, _VolumeTexture1Power) +
                                     pow(volumeTexture2Alpha, _VolumeTexture2Power);

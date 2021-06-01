@@ -6,7 +6,7 @@ Shader "Hidden/Light2d-Point-Volumetric"
 
         Pass
         {
-            Blend One One
+            Blend SrcAlpha One
             ZWrite Off
             Cull Off
 
@@ -32,6 +32,9 @@ Shader "Hidden/Light2d-Point-Volumetric"
                 half2	screenUV        : TEXCOORD1;
                 half2	lookupUV        : TEXCOORD2;  // This is used for light relative direction
                 half2	lookupNoRotUV   : TEXCOORD3;  // This is used for screen relative direction of a light
+                // CUSTOM CODE
+                float2  originPos : TEXCOORD6;
+                //
 
 #if LIGHT_QUALITY_FAST
                 half4	lightDirection	: TEXCOORD4;
@@ -69,6 +72,35 @@ Shader "Hidden/Light2d-Point-Volumetric"
             half    _InverseHDREmulationScale;
             half    _IsFullSpotlight;
 
+            // CUSTOM CODE
+            CBUFFER_START(UnityPerMaterial)
+                float  _VolumeTextureCount;
+
+                float  _VolumeTexture0Scale;
+                float  _VolumeTexture1Scale;
+                float  _VolumeTexture2Scale;
+
+                float  _VolumeTexture0TimeScale;
+                float  _VolumeTexture1TimeScale;
+                float  _VolumeTexture2TimeScale;
+
+                float  _VolumeTexture0Power;
+                float  _VolumeTexture1Power;
+                float  _VolumeTexture2Power;
+
+                float2  _VolumeTexture0Direction;
+                float2  _VolumeTexture1Direction;
+                float2  _VolumeTexture2Direction;
+            CBUFFER_END
+
+            TEXTURE2D(_VolumeTexture0);
+            SAMPLER(sampler_VolumeTexture0);
+            TEXTURE2D(_VolumeTexture1);
+            SAMPLER(sampler_VolumeTexture1);
+            TEXTURE2D(_VolumeTexture2);
+            SAMPLER(sampler_VolumeTexture2);
+            //
+
             SHADOW_VARIABLES
 
             Varyings vert(Attributes input)
@@ -96,6 +128,10 @@ Shader "Hidden/Light2d-Point-Volumetric"
                 output.positionWS = worldSpacePos;
 #endif
 
+                // CUSTOM CODE
+                output.originPos = ComputeScreenPos(mul(UNITY_MATRIX_VP, float4(0.0f, 0.0f, 0.0f, 1.0f)) / output.positionCS.w);
+                //
+
                 float4 clipVertex = output.positionCS / output.positionCS.w;
                 output.screenUV = ComputeScreenPos(clipVertex).xy;
 
@@ -122,12 +158,25 @@ Shader "Hidden/Light2d-Point-Volumetric"
                 mappedUV.y = _FalloffIntensity;
                 attenuation = SAMPLE_TEXTURE2D(_FalloffLookup, sampler_FalloffLookup, mappedUV).r;
 
+                // CUSTOM CODE
+                float2 position = (input.positionCS.xy / _ScreenParams.xy - input.originPos.xy);
+                float volumeTexture0Alpha = _VolumeTextureCount == 0.0f ? 0.0f : SAMPLE_TEXTURE2D(_VolumeTexture0, sampler_VolumeTexture0, position / _VolumeTexture0Scale + _VolumeTexture0Direction * _Time * _VolumeTexture0TimeScale).a;
+                float volumeTexture1Alpha = _VolumeTextureCount < 1.5f  ? 0.0f : SAMPLE_TEXTURE2D(_VolumeTexture1, sampler_VolumeTexture1, position / _VolumeTexture1Scale + _VolumeTexture1Direction * _Time * _VolumeTexture1TimeScale).a;
+                float volumeTexture2Alpha = _VolumeTextureCount < 2.5f  ? 0.0f : SAMPLE_TEXTURE2D(_VolumeTexture2, sampler_VolumeTexture2, position / _VolumeTexture2Scale + _VolumeTexture2Direction * _Time * _VolumeTexture2TimeScale).a;
+                float volumeAlpha = pow(volumeTexture0Alpha, _VolumeTexture0Power) +
+                                    pow(volumeTexture1Alpha, _VolumeTexture1Power) +
+                                    pow(volumeTexture2Alpha, _VolumeTexture2Power);
+                //
+
 #if USE_POINT_LIGHT_COOKIES
                 half4 cookieColor = SAMPLE_TEXTURE2D(_PointLightCookieTex, sampler_PointLightCookieTex, input.lookupUV);
                 half4 lightColor = cookieColor * _LightColor * attenuation;
 #else
                 half4 lightColor = _LightColor * attenuation;
 #endif
+                // CUSTOM CODE
+                lightColor.a *= volumeAlpha;
+                //
 
                 APPLY_SHADOWS(input, lightColor, _ShadowVolumeIntensity);
 

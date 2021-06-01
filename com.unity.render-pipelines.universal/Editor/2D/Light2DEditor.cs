@@ -281,6 +281,10 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
             EditorGUILayout.Slider(m_FalloffIntensity, 0, 1, Styles.generalFalloffIntensity);
             EditorGUILayout.PropertyField(m_PointLightCookie, Styles.pointLightCookie);
+
+            // CUSTOM CODE
+            EditorGUILayout.PropertyField(m_VolumeTextures, Styles.generalVolumeTextures);
+            //
         }
 
         void OnShapeLight(Light2D.LightType lightType, SerializedObject serializedObject)
