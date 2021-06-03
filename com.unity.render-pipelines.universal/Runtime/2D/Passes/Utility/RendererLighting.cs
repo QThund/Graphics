@@ -55,23 +55,40 @@ namespace UnityEngine.Experimental.Rendering.Universal
         private static readonly int k_LightColorID = Shader.PropertyToID("_LightColor");
         private static readonly int k_VolumeOpacityID = Shader.PropertyToID("_VolumeOpacity");
         // CUSTOM CODE
-        private const int VOLUME_TEXTURE_COUNT = 3;
+        private const int VOLUME_TEXTURE_COUNT = 4;
         private static readonly int k_VolumeTextureCount = Shader.PropertyToID("_VolumeTextureCount");
         private static readonly int[] k_VolumeTextureIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0"),
                                                                       Shader.PropertyToID("_VolumeTexture1"),
-                                                                      Shader.PropertyToID("_VolumeTexture2")};
+                                                                      Shader.PropertyToID("_VolumeTexture2"),
+                                                                      Shader.PropertyToID("_VolumeTexture3")};
         private static readonly int[] k_VolumeTexturePowerIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0Power"),
                                                                            Shader.PropertyToID("_VolumeTexture1Power"),
-                                                                           Shader.PropertyToID("_VolumeTexture2Power")};
+                                                                           Shader.PropertyToID("_VolumeTexture2Power"),
+                                                                           Shader.PropertyToID("_VolumeTexture3Power")};
         private static readonly int[] k_VolumeTextureScaleIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0Scale"),
                                                                            Shader.PropertyToID("_VolumeTexture1Scale"),
-                                                                           Shader.PropertyToID("_VolumeTexture2Scale")};
+                                                                           Shader.PropertyToID("_VolumeTexture2Scale"),
+                                                                           Shader.PropertyToID("_VolumeTexture3Scale")};
         private static readonly int[] k_VolumeTextureTimeScaleIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0TimeScale"),
                                                                                Shader.PropertyToID("_VolumeTexture1TimeScale"),
-                                                                               Shader.PropertyToID("_VolumeTexture2TimeScale")};
+                                                                               Shader.PropertyToID("_VolumeTexture2TimeScale"),
+                                                                               Shader.PropertyToID("_VolumeTexture3TimeScale")};
         private static readonly int[] k_VolumeTextureDirectionIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0Direction"),
                                                                                Shader.PropertyToID("_VolumeTexture1Direction"),
-                                                                               Shader.PropertyToID("_VolumeTexture2Direction")};
+                                                                               Shader.PropertyToID("_VolumeTexture2Direction"),
+                                                                               Shader.PropertyToID("_VolumeTexture3Direction")};
+        private static readonly int[] k_VolumeTextureAlphaMultiplierIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0AlphaMultiplier"),
+                                                                                     Shader.PropertyToID("_VolumeTexture1AlphaMultiplier"),
+                                                                                     Shader.PropertyToID("_VolumeTexture2AlphaMultiplier"),
+                                                                                     Shader.PropertyToID("_VolumeTexture3AlphaMultiplier")};
+        private static readonly int[] k_VolumeTextureAspectRatioIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0AspectRatio"),
+                                                                                 Shader.PropertyToID("_VolumeTexture1AspectRatio"),
+                                                                                 Shader.PropertyToID("_VolumeTexture2AspectRatio"),
+                                                                                 Shader.PropertyToID("_VolumeTexture3AspectRatio")};
+        private static readonly int[] k_VolumeTextureIsAdditiveIDs = new int[]{ Shader.PropertyToID("_VolumeTexture0IsAdditive"),
+                                                                                Shader.PropertyToID("_VolumeTexture1IsAdditive"),
+                                                                                Shader.PropertyToID("_VolumeTexture2IsAdditive"),
+                                                                                Shader.PropertyToID("_VolumeTexture3IsAdditive")};
         //
         private static readonly int k_CookieTexID = Shader.PropertyToID("_CookieTex");
         private static readonly int k_FalloffLookupID = Shader.PropertyToID("_FalloffLookup");
@@ -259,15 +276,19 @@ namespace UnityEngine.Experimental.Rendering.Universal
                                         SetPointLightShaderGlobals(cmd, light);
 
                                     // CUSTOM CODE
-                                    cmd.SetGlobalFloat(k_VolumeTextureCount, light.volumeTextures.Length);
+                                    int volumeTextureCount = Mathf.Min(VOLUME_TEXTURE_COUNT, light.volumeTextures.Length);
+                                    cmd.SetGlobalFloat(k_VolumeTextureCount, volumeTextureCount);
 
-                                    for (int j = 0; j < light.volumeTextures.Length; ++j)
+                                    for (int j = 0; j < volumeTextureCount; ++j)
                                     {
                                         cmd.SetGlobalTexture(k_VolumeTextureIDs[j], light.volumeTextures[j].Texture);
                                         cmd.SetGlobalVector(k_VolumeTextureDirectionIDs[j], light.volumeTextures[j].Direction);
                                         cmd.SetGlobalFloat(k_VolumeTexturePowerIDs[j], light.volumeTextures[j].Power);
                                         cmd.SetGlobalFloat(k_VolumeTextureScaleIDs[j], light.volumeTextures[j].Scale);
                                         cmd.SetGlobalFloat(k_VolumeTextureTimeScaleIDs[j], light.volumeTextures[j].TimeScale);
+                                        cmd.SetGlobalFloat(k_VolumeTextureAspectRatioIDs[j], light.volumeTextures[j].AspectRatio);
+                                        cmd.SetGlobalFloat(k_VolumeTextureAlphaMultiplierIDs[j], light.volumeTextures[j].AlphaMultiplier);
+                                        cmd.SetGlobalFloat(k_VolumeTextureIsAdditiveIDs[j], light.volumeTextures[j].IsAdditive ? 1.0f : 0.0f);
                                     }
                                     //
 

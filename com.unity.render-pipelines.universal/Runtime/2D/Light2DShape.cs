@@ -19,7 +19,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
             public Vector2 Direction = Vector2.right;
             public float Power = 1.0f;
             public float Scale = 1.0f;
+            public float AspectRatio = 1.0f;
             public float TimeScale = 1.0f;
+            public float AlphaMultiplier = 1.0f;
+            public bool IsAdditive = false;
         }
 
         [SerializeField] VolumeTexture[] m_VolumeTextures = new VolumeTexture[0];
