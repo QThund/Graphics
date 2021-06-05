@@ -143,14 +143,14 @@ Shader "Hidden/Light2D-Shape-Volumetric"
                 // CUSTOM CODE
                 float defaultVolumeTexture0Alpha = 0.0f;
                 float defaultVolumeTexture1Alpha = _VolumeTexture1IsAdditive ? 0.0f : 1.0f;
-                float defaultVolumeTexture2Alpha = _VolumeTexture1IsAdditive ? 0.0f : 1.0f;
-                float defaultVolumeTexture3Alpha = _VolumeTexture1IsAdditive ? 0.0f : 1.0f;
+                float defaultVolumeTexture2Alpha = _VolumeTexture2IsAdditive ? 0.0f : 1.0f;
+                float defaultVolumeTexture3Alpha = _VolumeTexture3IsAdditive ? 0.0f : 1.0f;
 
                 float2 position = (i.positionCS.xy / _ScreenParams.xy - i.originPos.xy);
-                float volumeTexture0Alpha = _VolumeTextureCount == 0.0f ? defaultVolumeTexture0Alpha : SAMPLE_TEXTURE2D(_VolumeTexture0, sampler_VolumeTexture0, position / _VolumeTexture0Scale * float2(1.0f, _VolumeTexture0AspectRatio) + _VolumeTexture0Direction * _Time * _VolumeTexture0TimeScale).a;
-                float volumeTexture1Alpha = _VolumeTextureCount < 1.5f ? defaultVolumeTexture1Alpha : SAMPLE_TEXTURE2D(_VolumeTexture1, sampler_VolumeTexture1, position / _VolumeTexture1Scale * float2(1.0f, _VolumeTexture1AspectRatio) + _VolumeTexture1Direction * _Time * _VolumeTexture1TimeScale).a;
-                float volumeTexture2Alpha = _VolumeTextureCount < 2.5f ? defaultVolumeTexture2Alpha : SAMPLE_TEXTURE2D(_VolumeTexture2, sampler_VolumeTexture2, position / _VolumeTexture2Scale * float2(1.0f, _VolumeTexture2AspectRatio) + _VolumeTexture2Direction * _Time * _VolumeTexture2TimeScale).a;
-                float volumeTexture3Alpha = _VolumeTextureCount < 3.5f ? defaultVolumeTexture3Alpha : SAMPLE_TEXTURE2D(_VolumeTexture3, sampler_VolumeTexture3, position / _VolumeTexture3Scale * float2(1.0f, _VolumeTexture3AspectRatio) + _VolumeTexture3Direction * _Time * _VolumeTexture3TimeScale).a;
+                float volumeTexture0Alpha = _VolumeTextureCount == 0.0f ? defaultVolumeTexture0Alpha : SAMPLE_TEXTURE2D(_VolumeTexture0, sampler_VolumeTexture0, position / _VolumeTexture0Scale * float2(1.0f, _VolumeTexture0AspectRatio) - _VolumeTexture0Direction * _Time * _VolumeTexture0TimeScale).a;
+                float volumeTexture1Alpha = _VolumeTextureCount < 1.5f ? defaultVolumeTexture1Alpha : SAMPLE_TEXTURE2D(_VolumeTexture1, sampler_VolumeTexture1, position / _VolumeTexture1Scale * float2(1.0f, _VolumeTexture1AspectRatio) - _VolumeTexture1Direction * _Time * _VolumeTexture1TimeScale).a;
+                float volumeTexture2Alpha = _VolumeTextureCount < 2.5f ? defaultVolumeTexture2Alpha : SAMPLE_TEXTURE2D(_VolumeTexture2, sampler_VolumeTexture2, position / _VolumeTexture2Scale * float2(1.0f, _VolumeTexture2AspectRatio) - _VolumeTexture2Direction * _Time * _VolumeTexture2TimeScale).a;
+                float volumeTexture3Alpha = _VolumeTextureCount < 3.5f ? defaultVolumeTexture3Alpha : SAMPLE_TEXTURE2D(_VolumeTexture3, sampler_VolumeTexture3, position / _VolumeTexture3Scale * float2(1.0f, _VolumeTexture3AspectRatio) - _VolumeTexture3Direction * _Time * _VolumeTexture3TimeScale).a;
                 volumeTexture0Alpha = pow(volumeTexture0Alpha, _VolumeTexture0Power) * _VolumeTexture0AlphaMultiplier;
                 volumeTexture1Alpha = pow(volumeTexture1Alpha, _VolumeTexture1Power) * _VolumeTexture1AlphaMultiplier;
                 volumeTexture2Alpha = pow(volumeTexture2Alpha, _VolumeTexture2Power) * _VolumeTexture2AlphaMultiplier;
@@ -167,7 +167,7 @@ Shader "Hidden/Light2D-Shape-Volumetric"
                 color.a = i.color.a * SAMPLE_TEXTURE2D(_FalloffLookup, sampler_FalloffLookup, i.uv).r;
 #endif
                 // CUSTOM CODE
-                color.a *= volumeAlpha;
+                color.a *= _VolumeTextureCount == 0.0f ? 1.0f : volumeAlpha;
                 //
 
                 APPLY_SHADOWS(i, color, _ShadowVolumeIntensity);
