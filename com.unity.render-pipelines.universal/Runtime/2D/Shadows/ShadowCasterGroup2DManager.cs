@@ -35,8 +35,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
             Transform transformToCheck = shadowCaster.transform.parent;
             while (transformToCheck != null)
             {
-                CompositeShadowCaster2D currentGroup = transformToCheck.GetComponent<CompositeShadowCaster2D>();
-                if (currentGroup != null)
+                CompositeShadowCaster2D currentGroup = null;
+
+                if (transformToCheck.TryGetComponent(out currentGroup) && currentGroup != null)
                     retGroup = currentGroup;
 
                 transformToCheck = transformToCheck.parent;
@@ -50,7 +51,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             ShadowCasterGroup2D newShadowCasterGroup = FindTopMostCompositeShadowCaster(shadowCaster) as ShadowCasterGroup2D;
 
             if (newShadowCasterGroup == null)
-                newShadowCasterGroup = shadowCaster.GetComponent<ShadowCaster2D>();
+                shadowCaster.TryGetComponent(out newShadowCasterGroup);
 
             if (newShadowCasterGroup != null && shadowCasterGroup != newShadowCasterGroup)
             {

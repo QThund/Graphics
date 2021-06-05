@@ -21,7 +21,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         [SerializeField] int[] m_ApplyToSortingLayers = null;
         [SerializeField] Vector3[] m_ShapePath = null;
         [SerializeField] int m_ShapePathHash = 0;
-        [SerializeField] Mesh m_Mesh;
+        [SerializeField] protected Mesh m_Mesh;
         [SerializeField] int m_InstanceId;
 
         internal ShadowCasterGroup2D m_ShadowCasterGroup = null;
@@ -135,8 +135,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
         public void Update()
         {
-            Renderer renderer = GetComponent<Renderer>();
-            m_HasRenderer = renderer != null;
+            Renderer renderer;
+            m_HasRenderer = TryGetComponent(out renderer) && renderer != null;
 
             bool rebuildMesh = LightUtility.CheckForChange(m_ShapePathHash, ref m_PreviousPathHash);
             if (rebuildMesh)

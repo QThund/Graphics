@@ -9,7 +9,7 @@ using UnityEngine.Experimental.Rendering.Universal;
 
 namespace UnityEditor.Experimental.Rendering.Universal
 {
-    [CustomEditor(typeof(ShadowCaster2D))]
+    [CustomEditor(typeof(ShadowCaster2D), true)]
     [CanEditMultipleObjects]
     internal class ShadowCaster2DEditor : PathComponentEditor<ScriptablePath>
     {
