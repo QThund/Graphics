@@ -120,8 +120,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 // All the positions are moved so the local origin is at zero, no matter the world position of this component
                 for (int i = 0; i < vertices.Count; ++i)
                 {
-                    vertices[i] -= thisPosition * 2.0f;
-                    extrusions[i] -= new Color(thisPosition.x, thisPosition.y, thisPosition.x, thisPosition.y) * 2.0f;
+                    vertices[i] -= thisPosition;
+                    extrusions[i] -= new Color(thisPosition.x, thisPosition.y, thisPosition.x, thisPosition.y);
                 }
 
                 m_Mesh.vertices = vertices.ToArray();
