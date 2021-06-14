@@ -175,6 +175,35 @@ namespace UnityEngine.Experimental.Rendering.Universal
                             this.ClearDirtyLighting(cmd, lightStats.blendStylesUsed);
                         }
 
+                        /*
+                         
+                        // A TEST FOR SMOOTHING SHADOWS
+
+                        RenderTextureDescriptor desc = renderingData.cameraData.cameraTargetDescriptor;
+                        desc.depthBufferBits = 0;
+                        desc.useMipMap = false;
+                        desc.width /= 2;
+                        desc.height /= 2;
+
+                        RenderTextureDescriptor desc2 = desc;
+                        desc.width /= 2;
+                        desc.height /= 2;
+
+                        cmd.GetTemporaryRT(Shader.PropertyToID("_ShadowsBlur"), desc, FilterMode.Bilinear);
+                        cmd.GetTemporaryRT(Shader.PropertyToID("_ShadowsBlur2"), desc2, FilterMode.Bilinear);
+
+                        cmd.Blit(k_ShapeLightTexture0ID, Shader.PropertyToID("_ShadowsBlur"));
+                        cmd.Blit(Shader.PropertyToID("_ShadowsBlur"), Shader.PropertyToID("_ShadowsBlur2"));
+
+                        cmd.Blit(Shader.PropertyToID("_ShadowsBlur2"), Shader.PropertyToID("_ShadowsBlur"));
+                        cmd.Blit(Shader.PropertyToID("_ShadowsBlur"), k_ShapeLightTexture0ID);
+
+                        cmd.ReleaseTemporaryRT(Shader.PropertyToID("_ShadowsBlur"));
+                        cmd.ReleaseTemporaryRT(Shader.PropertyToID("_ShadowsBlur2"));
+                        context.ExecuteCommandBuffer(cmd);
+                        cmd.Clear();
+                        */
+
                         CoreUtils.SetRenderTarget(cmd,
                             // CUSTOM CODE
                             colorAttachments,
