@@ -26,6 +26,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
         }
 
         [SerializeField] VolumeTexture[] m_VolumeTextures = new VolumeTexture[0];
+        [SerializeField] bool m_IsDitheringEnabled = false;
+        [SerializeField] Texture2D m_DitheringTexture = null;
         //
 
         float   m_PreviousShapeLightFalloffSize             = -1;
@@ -42,6 +44,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
         public Vector3[]        shapePath                       => m_ShapePath;
         // CUSTOM CODE
         public VolumeTexture[]  volumeTextures                  => m_VolumeTextures;
+        public bool isDitheringEnabled                          => m_IsDitheringEnabled;
+        public Texture2D ditheringTexture                       => m_DitheringTexture;
         //
     }
 }

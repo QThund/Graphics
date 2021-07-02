@@ -95,6 +95,7 @@ Shader "Hidden/Light2D-Shape-Volumetric"
                 float  _VolumeTexture2IsAdditive;
                 float  _VolumeTexture3IsAdditive;
 
+                float _IsDitheringEnabled;
             CBUFFER_END
 
             TEXTURE2D(_VolumeTexture0);
@@ -105,6 +106,8 @@ Shader "Hidden/Light2D-Shape-Volumetric"
             SAMPLER(sampler_VolumeTexture2);
             TEXTURE2D(_VolumeTexture3);
             SAMPLER(sampler_VolumeTexture3);
+            TEXTURE2D(_DitheringTexture);
+            SAMPLER(sampler_DitheringTexture);
             //
 
             SHADOW_VARIABLES
@@ -168,6 +171,11 @@ Shader "Hidden/Light2D-Shape-Volumetric"
 #endif
                 // CUSTOM CODE
                 color.a *= _VolumeTextureCount == 0.0f ? 1.0f : volumeAlpha;
+
+                if (_IsDitheringEnabled)
+                {
+                    color += (SAMPLE_TEXTURE2D(_DitheringTexture, sampler_DitheringTexture, i.positionCS.xy / 8.0).r / 32.0 - (1.0 / 128.0));
+                }
                 //
 
                 APPLY_SHADOWS(i, color, _ShadowVolumeIntensity);

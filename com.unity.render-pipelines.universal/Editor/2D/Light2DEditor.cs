@@ -74,6 +74,8 @@ namespace UnityEditor.Experimental.Rendering.Universal
             public static GUIContent generalVolumeOpacity = EditorGUIUtility.TrTextContent("Volume Opacity", "Specify the light's volumetric light volume opacity");
             // CUSTOM CODE
             public static GUIContent generalVolumeTextures = EditorGUIUtility.TrTextContent("Volume Textures", "Specify the light's volumetric textures");
+            public static GUIContent generalIsDithering = EditorGUIUtility.TrTextContent("Enable Dithering", "");
+            public static GUIContent generalDitheringTexture = EditorGUIUtility.TrTextContent("Dithering Texture", "");
             //
             public static GUIContent generalBlendStyle = EditorGUIUtility.TrTextContent("Blend Style", "Specify the blend style");
             public static GUIContent generalLightOverlapMode = EditorGUIUtility.TrTextContent("Alpha Blend on Overlap", "Use alpha blending instead of additive blending when this light overlaps others");
@@ -140,6 +142,8 @@ namespace UnityEditor.Experimental.Rendering.Universal
         SerializedProperty m_ShapeLightSprite;
         // CUSTOM CODE
         SerializedProperty m_VolumeTextures;
+        SerializedProperty m_IsDitheringEnabled;
+        SerializedProperty m_DitheringTexture;
         //
 
         int[]           m_BlendStyleIndices;
@@ -203,6 +207,8 @@ namespace UnityEditor.Experimental.Rendering.Universal
             m_ShapeLightSprite = serializedObject.FindProperty("m_LightCookieSprite");
             // CUSTOM CODE
             m_VolumeTextures = serializedObject.FindProperty("m_VolumeTextures");
+            m_IsDitheringEnabled = serializedObject.FindProperty("m_IsDitheringEnabled");
+            m_DitheringTexture = serializedObject.FindProperty("m_DitheringTexture");
             //
 
             m_AnyBlendStyleEnabled = false;
@@ -284,6 +290,8 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
             // CUSTOM CODE
             EditorGUILayout.PropertyField(m_VolumeTextures, Styles.generalVolumeTextures);
+            EditorGUILayout.PropertyField(m_IsDitheringEnabled, Styles.generalIsDithering);
+            EditorGUILayout.PropertyField(m_DitheringTexture, Styles.generalDitheringTexture);
             //
         }
 
@@ -321,6 +329,8 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
                 // CUSTOM CODE
                 EditorGUILayout.PropertyField(m_VolumeTextures, Styles.generalVolumeTextures);
+                EditorGUILayout.PropertyField(m_IsDitheringEnabled, Styles.generalIsDithering);
+                EditorGUILayout.PropertyField(m_DitheringTexture, Styles.generalDitheringTexture);
                 //
             }
         }

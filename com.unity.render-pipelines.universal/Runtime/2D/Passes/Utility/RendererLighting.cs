@@ -89,6 +89,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
                                                                                 Shader.PropertyToID("_VolumeTexture1IsAdditive"),
                                                                                 Shader.PropertyToID("_VolumeTexture2IsAdditive"),
                                                                                 Shader.PropertyToID("_VolumeTexture3IsAdditive")};
+        private static readonly int k_IsDitheringEnabledID = Shader.PropertyToID("_IsDitheringEnabled");
+        private static readonly int k_DitheringTextureID = Shader.PropertyToID("_DitheringTexture");
         //
         private static readonly int k_CookieTexID = Shader.PropertyToID("_CookieTex");
         private static readonly int k_FalloffLookupID = Shader.PropertyToID("_FalloffLookup");
@@ -248,6 +250,15 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 for (var i = 0; i < lights.Count; i++)
                 {
                     var light = lights[i];
+
+                    // CUSTOM CODE
+                    cmd.SetGlobalFloat(k_IsDitheringEnabledID, light.isDitheringEnabled ? 1.0f : 0.0f);
+
+                    if (light.isDitheringEnabled)
+                    {
+                        cmd.SetGlobalTexture(k_DitheringTextureID, light.ditheringTexture);
+                    }
+                    //
 
                     var topMostLayer = light.GetTopMostLitLayer();
                     if (layerToRender == topMostLayer)
