@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
             // CUSTOM CODE
             public static readonly GUIContent renderTargets = EditorGUIUtility.TrTextContent("Additional render targets", "A list of render targets to be set when rendering 2D geometry, in the same order. The first texture must be accessed by the index 1 in the shaders, as the index 0 will be occupied by a default color texture.");
+            public static readonly GUIContent shadowBlurBlitMaterial = EditorGUIUtility.TrTextContent("Shadow blur blit material", "The material to use in the blit operation when shadows are blurred.");
             //
         }
 
@@ -53,6 +54,7 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
         // CUSTOM CODE
         SerializedProperty m_renderTargets;
+        SerializedProperty m_shadowBlurBlitMaterial;
         //
 
         Analytics.Renderer2DAnalytics m_Analytics = Analytics.Renderer2DAnalytics.instance;
@@ -110,6 +112,7 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
             // CUSTOM CODE
             m_renderTargets = serializedObject.FindProperty("m_renderTargets");
+            m_shadowBlurBlitMaterial = serializedObject.FindProperty("m_shadowBlurBlitMaterial");
             //
         }
 
@@ -195,6 +198,7 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
             // CUSTOM CODE
             EditorGUILayout.PropertyField(m_renderTargets, Styles.renderTargets);
+            EditorGUILayout.PropertyField(m_shadowBlurBlitMaterial, Styles.shadowBlurBlitMaterial);
             //
             
             m_WasModified |= serializedObject.hasModifiedProperties;

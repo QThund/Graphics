@@ -175,34 +175,22 @@ namespace UnityEngine.Experimental.Rendering.Universal
                             this.ClearDirtyLighting(cmd, lightStats.blendStylesUsed);
                         }
 
-                        /*
-                         
-                        // A TEST FOR SMOOTHING SHADOWS
+                        // CUSTOM CODE
+                        // Shadow smoothing
+                        if(m_Renderer2DData.ShadowBlurBlitMaterial != null)
+                        {
+                            RenderTextureDescriptor desc = renderingData.cameraData.cameraTargetDescriptor;
 
-                        RenderTextureDescriptor desc = renderingData.cameraData.cameraTargetDescriptor;
-                        desc.depthBufferBits = 0;
-                        desc.useMipMap = false;
-                        desc.width /= 2;
-                        desc.height /= 2;
+                            cmd.GetTemporaryRT(Shader.PropertyToID("_ShadowsBlur"), desc.width, desc.height, 0, FilterMode.Bilinear, RenderTextureFormat.RGB111110Float);
 
-                        RenderTextureDescriptor desc2 = desc;
-                        desc.width /= 2;
-                        desc.height /= 2;
+                            cmd.Blit(k_ShapeLightTexture0ID, Shader.PropertyToID("_ShadowsBlur"), m_Renderer2DData.ShadowBlurBlitMaterial, 0);
+                            cmd.Blit(Shader.PropertyToID("_ShadowsBlur"), k_ShapeLightTexture0ID, m_Renderer2DData.ShadowBlurBlitMaterial, 1);
 
-                        cmd.GetTemporaryRT(Shader.PropertyToID("_ShadowsBlur"), desc, FilterMode.Bilinear);
-                        cmd.GetTemporaryRT(Shader.PropertyToID("_ShadowsBlur2"), desc2, FilterMode.Bilinear);
-
-                        cmd.Blit(k_ShapeLightTexture0ID, Shader.PropertyToID("_ShadowsBlur"));
-                        cmd.Blit(Shader.PropertyToID("_ShadowsBlur"), Shader.PropertyToID("_ShadowsBlur2"));
-
-                        cmd.Blit(Shader.PropertyToID("_ShadowsBlur2"), Shader.PropertyToID("_ShadowsBlur"));
-                        cmd.Blit(Shader.PropertyToID("_ShadowsBlur"), k_ShapeLightTexture0ID);
-
-                        cmd.ReleaseTemporaryRT(Shader.PropertyToID("_ShadowsBlur"));
-                        cmd.ReleaseTemporaryRT(Shader.PropertyToID("_ShadowsBlur2"));
-                        context.ExecuteCommandBuffer(cmd);
-                        cmd.Clear();
-                        */
+                            cmd.ReleaseTemporaryRT(Shader.PropertyToID("_ShadowsBlur"));
+                            context.ExecuteCommandBuffer(cmd);
+                            cmd.Clear();
+                        }
+                        //
 
                         CoreUtils.SetRenderTarget(cmd,
                             // CUSTOM CODE

@@ -151,6 +151,17 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
             return index;
         }
+
+        public Material ShadowBlurBlitMaterial
+        {
+            get
+            {
+                return m_shadowBlurBlitMaterial;
+            }
+        }
+
+        [SerializeField]
+        Material m_shadowBlurBlitMaterial;
         //
 
         public float hdrEmulationScale => m_HDREmulationScale;
