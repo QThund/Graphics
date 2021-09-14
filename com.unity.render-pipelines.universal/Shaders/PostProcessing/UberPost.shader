@@ -117,7 +117,8 @@ Shader "Hidden/Universal Render Pipeline/UberPost"
             float2 uv = UnityStereoTransformScreenSpaceTex(input.uv);
             float2 uvDistorted = DistortUV(uv);
 
-            half3 color = (0.0).xxx;
+            half4 color = (0.0).xxxx;
+            color.a = SAMPLE_TEXTURE2D_X(_SourceTex, sampler_LinearClamp, uvDistorted).a;
 
             #if _CHROMATIC_ABERRATION
             {
@@ -131,18 +132,18 @@ Shader "Hidden/Universal Render Pipeline/UberPost"
                 half g = SAMPLE_TEXTURE2D_X(_SourceTex, sampler_LinearClamp, DistortUV(delta + uv)      ).y;
                 half b = SAMPLE_TEXTURE2D_X(_SourceTex, sampler_LinearClamp, DistortUV(delta * 2.0 + uv)).z;
 
-                color = half3(r, g, b);
+                color.rgb = half3(r, g, b);
             }
             #else
             {
-                color = SAMPLE_TEXTURE2D_X(_SourceTex, sampler_LinearClamp, uvDistorted).xyz;
+                color.rgb = SAMPLE_TEXTURE2D_X(_SourceTex, sampler_LinearClamp, uvDistorted).xyz;
             }
             #endif
 
             // Gamma space... Just do the rest of Uber in linear and convert back to sRGB at the end
             #if UNITY_COLORSPACE_GAMMA
             {
-                color = SRGBToLinear(color);
+                color.rgb = SRGBToLinear(color);
             }
             #endif
 
@@ -165,7 +166,8 @@ Shader "Hidden/Universal Render Pipeline/UberPost"
                 }
 
                 bloom.xyz *= BloomIntensity;
-                color += bloom.xyz * BloomTint;
+                color.rgb += bloom.xyz * BloomTint;
+                color.a += Luminance(bloom.rgb);
 
                 #if defined(BLOOM_DIRT)
                 {
@@ -175,7 +177,7 @@ Shader "Hidden/Universal Render Pipeline/UberPost"
                     // distortion is active.
                     half3 dirt = SAMPLE_TEXTURE2D(_LensDirt_Texture, sampler_LinearClamp, uvDistorted * LensDirtScale + LensDirtOffset).xyz;
                     dirt *= LensDirtIntensity;
-                    color += dirt * bloom.xyz;
+                    color.rgb += dirt * bloom.xyz;
                 }
                 #endif
             }
@@ -188,34 +190,34 @@ Shader "Hidden/Universal Render Pipeline/UberPost"
             UNITY_BRANCH
             if (VignetteIntensity > 0)
             {
-                color = ApplyVignette(color, uvDistorted, VignetteCenter, VignetteIntensity, VignetteRoundness, VignetteSmoothness, VignetteColor);
+                color.rgb = ApplyVignette(color, uvDistorted, VignetteCenter, VignetteIntensity, VignetteRoundness, VignetteSmoothness, VignetteColor);
             }
 
             // Color grading is always enabled when post-processing/uber is active
             {
-                color = ApplyColorGrading(color, PostExposure, TEXTURE2D_ARGS(_InternalLut, sampler_LinearClamp), LutParams, TEXTURE2D_ARGS(_UserLut, sampler_LinearClamp), UserLutParams, UserLutContribution);
+                color.rgb = ApplyColorGrading(color, PostExposure, TEXTURE2D_ARGS(_InternalLut, sampler_LinearClamp), LutParams, TEXTURE2D_ARGS(_UserLut, sampler_LinearClamp), UserLutParams, UserLutContribution);
             }
 
             #if _FILM_GRAIN
             {
-                color = ApplyGrain(color, uv, TEXTURE2D_ARGS(_Grain_Texture, sampler_LinearRepeat), GrainIntensity, GrainResponse, GrainScale, GrainOffset);
+                color.rgb = ApplyGrain(color, uv, TEXTURE2D_ARGS(_Grain_Texture, sampler_LinearRepeat), GrainIntensity, GrainResponse, GrainScale, GrainOffset);
             }
             #endif
 
             // Back to sRGB
             #if UNITY_COLORSPACE_GAMMA || _LINEAR_TO_SRGB_CONVERSION
             {
-                color = LinearToSRGB(color);
+                color.rgb = LinearToSRGB(color);
             }
             #endif
 
             #if _DITHERING
             {
-                color = ApplyDithering(color, uv, TEXTURE2D_ARGS(_BlueNoise_Texture, sampler_PointRepeat), DitheringScale, DitheringOffset);
+                color.rgb = ApplyDithering(color, uv, TEXTURE2D_ARGS(_BlueNoise_Texture, sampler_PointRepeat), DitheringScale, DitheringOffset);
             }
             #endif
 
-            return half4(color, 1.0);
+            return color;
         }
 
     ENDHLSL

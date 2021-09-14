@@ -6,7 +6,7 @@ namespace UnityEngine.Rendering.Universal
     public sealed class ScreenBorder : VolumeComponent, IPostProcessComponent
     {
         [Tooltip("The width, in pixels, of the border.")]
-        public FloatParameter BorderWidth = new FloatParameter(0f);
+        public FloatParameter BorderWidth = new FloatParameter(0.0f);
 
         [Tooltip("The hardness of the transparency gradient.")]
         public ClampedFloatParameter BorderGradientPower = new ClampedFloatParameter(1.0f, 1.0f, 256.0f);
@@ -17,8 +17,8 @@ namespace UnityEngine.Rendering.Universal
         public bool IsActive()
         {
             return active &&
-                   BorderWidth.value != 0f &&
-                   BorderColor.value.a != 0f;
+                   BorderWidth.value != 0.0f &&
+                   BorderColor.value.a != 0.0f;
         }
 
         public bool IsTileCompatible() => true;

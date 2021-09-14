@@ -220,10 +220,15 @@ namespace UnityEngine.Rendering
         {
             foreach (var component in components)
             {
+                var state = stack.GetComponent(component.GetType());
+
+                // CUSTOM CODE
+                state.active = component.active;
+                //
+
                 if (!component.active)
                     continue;
 
-                var state = stack.GetComponent(component.GetType());
                 component.Override(state, interpFactor);
             }
         }

@@ -85,7 +85,10 @@ namespace UnityEngine.Rendering.Universal.Internal
         {
             ScreenBorder screenBorder = VolumeManager.instance.stack.GetComponent<ScreenBorder>();
 
-            if(screenBorder.IsActive() && !renderingData.cameraData.isSceneViewCamera)
+            ref CameraData cameraData = ref renderingData.cameraData;
+            RenderTargetIdentifier cameraTarget = (cameraData.targetTexture != null) ? new RenderTargetIdentifier(cameraData.targetTexture) : m_Source.id;
+
+            if (screenBorder.IsActive() && !cameraData.isSceneViewCamera)
             {
                 cmd.GetTemporaryRT(Shader.PropertyToID("_TempTarget"), GetCompatibleDescriptor(), FilterMode.Bilinear);
                 int destination = Shader.PropertyToID("_TempTarget");
@@ -95,11 +98,11 @@ namespace UnityEngine.Rendering.Universal.Internal
                 PostProcessMaterial.SetColor("_BorderColor", screenBorder.BorderColor.value);
 
                 RenderingUtils.Blit(
-                            cmd, m_Source.id, destination, PostProcessMaterial, 0, false,
+                            cmd, cameraTarget, destination, PostProcessMaterial, 0, false,
                             RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store,
                             RenderBufferLoadAction.DontCare, RenderBufferStoreAction.DontCare);
 
-                RenderingUtils.Blit(cmd, destination, m_Source.id, m_BlitMaterial);
+                RenderingUtils.Blit(cmd, destination, cameraTarget, m_BlitMaterial);
             }
         }
     }

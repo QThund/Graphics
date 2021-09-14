@@ -6,7 +6,7 @@ namespace UnityEngine.Rendering.Universal
     public sealed class CustomVignette : VolumeComponent, IPostProcessComponent
     {
         [Tooltip("The radius, in pixels, of the inner area of the vignette.")]
-        public FloatParameter VignetteRadius = new FloatParameter(0f);
+        public FloatParameter VignetteRadius = new FloatParameter(0.0f);
 
         [Tooltip("The hardness of the transparency gradient.")]
         public ClampedFloatParameter VignetteGradientPower = new ClampedFloatParameter(1.0f, 1.0f, 128.0f);
@@ -23,8 +23,8 @@ namespace UnityEngine.Rendering.Universal
         public bool IsActive()
         {
             return active &&
-                   VignetteRadius.value != 0f &&
-                   VignetteColor.value.a != 0f &&
+                   VignetteRadius.value != 0.0f &&
+                   VignetteColor.value.a != 0.0f &&
                    TextureAlphaClipThreshold.value != 1.0f;
         }
 

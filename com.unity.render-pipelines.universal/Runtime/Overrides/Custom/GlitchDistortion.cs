@@ -6,7 +6,7 @@ namespace UnityEngine.Rendering.Universal
     public sealed class GlitchDistortion : VolumeComponent, IPostProcessComponent
     {
         [Tooltip("The amount of horizontal displacement of every line, in screen pixels.")]
-        public FloatParameter DisplacementLength = new FloatParameter(1.0f);
+        public FloatParameter DisplacementLength = new FloatParameter(0.0f);
 
         [Header("Noise texture generation")]
 

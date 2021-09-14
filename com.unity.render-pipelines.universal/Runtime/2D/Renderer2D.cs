@@ -34,7 +34,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         readonly RenderTargetHandle k_ColorGradingLutHandle;
 
         // CUSTOM CODE
-        List<RenderTargetHandle> k_AdditionalRenderTextureHandles = new List<RenderTargetHandle>(8);
+        List<RenderTargetHandle> k_AdditionalRenderTargetHandles = new List<RenderTargetHandle>(8);
         protected RenderTargetIdentifier[] m_renderTargets;
         //
 
@@ -73,13 +73,13 @@ namespace UnityEngine.Experimental.Rendering.Universal
             k_ColorGradingLutHandle.Init("_InternalGradingLut");
 
             // CUSTOM CODE
-            k_AdditionalRenderTextureHandles.Clear();
+            k_AdditionalRenderTargetHandles.Clear();
 
             for (int i = 0; i < data.AdditionalRenderTargets.Count; ++i)
             {
                 RenderTargetHandle newHandle = new RenderTargetHandle();
                 newHandle.Init(data.AdditionalRenderTargets[i].Name);
-                k_AdditionalRenderTextureHandles.Add(newHandle);
+                k_AdditionalRenderTargetHandles.Add(newHandle);
             }
 
             m_renderTargets = new RenderTargetIdentifier[data.AdditionalRenderTargets.Count + 1];
@@ -167,7 +167,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                         rtDescriptor.volumeDepth = additionalRenderTargets[i].VolumeDepth;
                         rtDescriptor.vrUsage = additionalRenderTargets[i].VrUsage;
 
-                        cmd.GetTemporaryRT(k_AdditionalRenderTextureHandles[i].id, rtDescriptor, additionalRenderTargets[i].TextureFilter);
+                        cmd.GetTemporaryRT(k_AdditionalRenderTargetHandles[i].id, rtDescriptor, additionalRenderTargets[i].TextureFilter);
                     }
                     //
                 }
@@ -249,6 +249,27 @@ namespace UnityEngine.Experimental.Rendering.Universal
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
 
+            // CUSTOM CODE
+            // Clearing camera render texture, if any, and additional render targets
+            if(renderingData.cameraData.camera.targetTexture != null && !renderingData.cameraData.isSceneViewCamera)
+            {
+                cmd = CommandBufferPool.Get();
+                cmd.SetRenderTarget(renderingData.cameraData.camera.targetTexture);
+                cmd.ClearRenderTarget(true, true, Color.clear);
+                context.ExecuteCommandBuffer(cmd);
+                CommandBufferPool.Release(cmd);
+            }
+
+            for(int i = 0; i < k_AdditionalRenderTargetHandles.Count; ++i)
+            {
+                cmd = CommandBufferPool.Get();
+                cmd.SetRenderTarget(k_AdditionalRenderTargetHandles[i].id);
+                cmd.ClearRenderTarget(true, true, Color.clear);
+                context.ExecuteCommandBuffer(cmd);
+                CommandBufferPool.Release(cmd);
+            }
+            //
+
             ConfigureCameraTarget(colorTargetHandle.Identifier(), depthTargetHandle.Identifier());
 
             // We generate color LUT in the base camera only. This allows us to not break render pass execution for overlay cameras.
@@ -263,7 +284,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
             for (int i = 1; i < m_Renderer2DData.AdditionalRenderTargets.Count + 1; ++i)
             {
-                m_renderTargets[i] = k_AdditionalRenderTextureHandles[i - 1].Identifier();
+                m_renderTargets[i] = k_AdditionalRenderTargetHandles[i - 1].Identifier();
             }
             //
 
@@ -284,7 +305,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             if (cameraData.postProcessEnabled)
             {
                 // CUSTOM CODE
-                m_DisplacementPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle, k_AdditionalRenderTextureHandles[m_Renderer2DData.GetIndexOfRenderTarget("_DisplacementTexture")]);
+                m_DisplacementPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle, k_AdditionalRenderTargetHandles[m_Renderer2DData.GetIndexOfRenderTarget("_DisplacementTexture")]);
                 EnqueuePass(m_DisplacementPostProcessPass);
                 //
 
@@ -295,7 +316,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     cameraTargetDescriptor,
                     colorTargetHandle,
                     // CUSTOM CODE
-                    k_AdditionalRenderTextureHandles[m_Renderer2DData.GetIndexOfRenderTarget("_BloomCameraColorTexture")],
+                    k_AdditionalRenderTargetHandles[m_Renderer2DData.GetIndexOfRenderTarget("_BloomCameraColorTexture")],
                     //
                     postProcessDestHandle,
                     depthTargetHandle,
@@ -313,16 +334,16 @@ namespace UnityEngine.Experimental.Rendering.Universal
             // CUSTOM CODE
             if (cameraData.postProcessEnabled)
             {
-                m_GlitchDistortionPostProcessPass.Setup(cameraTargetDescriptor, k_ColorTextureHandle);
+                m_GlitchDistortionPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle);
                 EnqueuePass(m_GlitchDistortionPostProcessPass);
 
-                m_ScreenBorderPostProcessPass.Setup(cameraTargetDescriptor, k_ColorTextureHandle);
+                m_ScreenBorderPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle);
                 EnqueuePass(m_ScreenBorderPostProcessPass);
 
-                m_VignettePostProcessPass.Setup(cameraTargetDescriptor, k_ColorTextureHandle);
+                m_VignettePostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle);
                 EnqueuePass(m_VignettePostProcessPass);
 
-                m_ScreenScalingPostProcessPass.Setup(cameraTargetDescriptor, k_ColorTextureHandle);
+                m_ScreenScalingPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle);
                 EnqueuePass(m_ScreenScalingPostProcessPass);
             }
             //
@@ -354,9 +375,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 cmd.ReleaseTemporaryRT(k_ColorTextureHandle.id);
 
                 // CUSTOM CODE
-                for(int i = 0; i < k_AdditionalRenderTextureHandles.Count; ++i)
+                for(int i = 0; i < k_AdditionalRenderTargetHandles.Count; ++i)
                 {
-                    cmd.ReleaseTemporaryRT(k_AdditionalRenderTextureHandles[i].id);
+                    cmd.ReleaseTemporaryRT(k_AdditionalRenderTargetHandles[i].id);
                 }
                 //
             }

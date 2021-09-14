@@ -73,12 +73,9 @@ Shader "Game/S_ScreenBorderPostProcess"
 
                 _BorderColor.a *= (gradient.x < 0.0f && gradient.y < 0.0f) ? 0.0f : max(gradient.x, gradient.y);
 
-                if (_BorderColor.a == 0.0f)
-                {
-                    discard;
-                }
-
-                screenColor.rgb = lerp(screenColor.rgb, _BorderColor.rgb, pow(_BorderColor.a, _BorderGradientPower));
+                float alpha = pow(_BorderColor.a, _BorderGradientPower);
+                screenColor.rgb = lerp(screenColor.rgb, _BorderColor.rgb, alpha);
+                screenColor.a = max(screenColor.a, alpha);
 
                 return screenColor;
             }
