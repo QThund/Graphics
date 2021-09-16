@@ -75,7 +75,7 @@ Shader "Game/S_ScreenBorderPostProcess"
 
                 float alpha = pow(_BorderColor.a, _BorderGradientPower);
                 screenColor.rgb = lerp(screenColor.rgb, _BorderColor.rgb, alpha);
-                screenColor.a = max(screenColor.a, alpha);
+                screenColor.a = saturate(screenColor.a + alpha);
 
                 return screenColor;
             }
