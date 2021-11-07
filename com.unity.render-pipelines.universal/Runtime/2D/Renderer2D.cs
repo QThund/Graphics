@@ -20,6 +20,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         VignettePostProcessPass m_VignettePostProcessPass;
         GlitchDistortionPostProcessPass m_GlitchDistortionPostProcessPass;
         ScreenScalingPostProcessPass m_ScreenScalingPostProcessPass;
+        SunShaftsPostProcessPass m_SunShaftsPostProcessPass;
         //
 
         private static readonly ProfilingSampler m_ProfilingSampler = new ProfilingSampler("Create Camera Textures");
@@ -61,6 +62,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             m_VignettePostProcessPass = new VignettePostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_GlitchDistortionPostProcessPass = new GlitchDistortionPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_ScreenScalingPostProcessPass = new ScreenScalingPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
+            m_SunShaftsPostProcessPass = new SunShaftsPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             //
 
             m_UseDepthStencilBuffer = data.useDepthStencilBuffer;
@@ -323,6 +325,11 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     k_ColorGradingLutHandle,
                     requireFinalPostProcessPass,
                     postProcessDestHandle == RenderTargetHandle.CameraTarget);
+
+                // CUSTOM CODE
+                m_SunShaftsPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle, k_AdditionalRenderTargetHandles[m_Renderer2DData.GetIndexOfRenderTarget("_SunShaftsTexture")]);
+                EnqueuePass(m_SunShaftsPostProcessPass);
+                //
 
                 EnqueuePass(m_PostProcessPass);
                 colorTargetHandle = postProcessDestHandle;

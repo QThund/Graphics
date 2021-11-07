@@ -10,7 +10,6 @@ namespace UnityEngine.Rendering.Universal.Internal
         RenderTextureDescriptor m_Descriptor;
         RenderTargetHandle m_Source;
         RenderTargetHandle m_displacementTexture;
-        private int k_shockwaveTextureId = Shader.PropertyToID("_DisplacementTexture");
         private Material m_postProcessMaterial;
 
         const string k_RenderPostProcessingTag = "Render Displacement PostProcessing Effect";
@@ -76,7 +75,7 @@ namespace UnityEngine.Rendering.Universal.Internal
         {
             cmd.GetTemporaryRT(Shader.PropertyToID("_TempTarget"), GetCompatibleDescriptor(), FilterMode.Bilinear);
             int destination = Shader.PropertyToID("_TempTarget");
-            cmd.SetGlobalTexture("_SockwavesTexture", m_displacementTexture.Identifier());
+            //cmd.SetGlobalTexture("_SockwavesTexture", m_displacementTexture.Identifier());
 
             RenderingUtils.Blit(
                         cmd, m_Source.id, destination, m_postProcessMaterial, 0, false,
