@@ -69,7 +69,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
             if (m_LightBlendStyles != null)
                 return;
 
-            m_LightBlendStyles = new Light2DBlendStyle[4];
+            // CUSTOM CODE
+            m_LightBlendStyles = new Light2DBlendStyle[2]; // 2 blend styles instead of 4, less textures to create when rendering lights
+            //
 
             for (int i = 0; i < m_LightBlendStyles.Length; ++i)
             {
