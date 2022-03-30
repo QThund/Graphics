@@ -129,9 +129,11 @@ namespace UnityEngine.Experimental.Rendering.Universal
             }
         }
 
+#if UNITY_EDITOR
+
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = Color.magenta;
+            Gizmos.color = new Color(1.0f, 0.0f, 1.0f, (Mathf.Sin(Time.realtimeSinceStartup) + 1.0f) * 0.5f);
 
             Vector3[] vertices = m_Mesh.vertices;
             int[] triangles = m_Mesh.triangles;
@@ -144,5 +146,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 Gizmos.DrawLine(vertices[triangles[i+2]] + position, vertices[triangles[i]] + position);
             }
         }
+
+#endif
+
     }
 }
