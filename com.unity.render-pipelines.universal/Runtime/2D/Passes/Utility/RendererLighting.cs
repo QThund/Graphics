@@ -429,7 +429,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 if ((blendStylesUsed & (uint)(1 << i)) == 0)
                     continue;
 
-                var sampleName = blendStyles[i].name;
+                var sampleName = "BlendStyle:" + blendStyles[i].name + " Layer:" + layerToRender;
                 cmd.BeginSample(sampleName);
 
                 var rtID = pass.rendererData.lightBlendStyles[i].renderTargetHandle.Identifier();
@@ -467,7 +467,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 if ((blendStylesUsed & (uint)(1 << i)) == 0)
                     continue;
 
-                string sampleName = blendStyles[i].name;
+                string sampleName = "VOLUMES=BlendStyle:" + blendStyles[i].name + " Layer:" + layerToRender;
                 cmd.BeginSample(sampleName);
 
                 RenderLightVolumeSet(
