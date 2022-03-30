@@ -169,34 +169,34 @@ namespace UnityEngine.Experimental.Rendering.Universal
                         if (lightStats.totalLights > 0)
                         {
                             this.RenderLights(renderingData, cmd, layerToRender, lightStats.blendStylesUsed);
+
+                            // CUSTOM CODE
+                            // Shadow smoothing
+                            if (m_Renderer2DData.ShadowBlurBlitMaterial != null)
+                            {
+                                RenderTextureDescriptor desc = renderingData.cameraData.cameraTargetDescriptor;
+
+                                cmd.GetTemporaryRT(Shader.PropertyToID("_ShadowsBlur"), desc.width, desc.height, 0, FilterMode.Bilinear, RenderTextureFormat.RGB111110Float);
+
+                                cmd.Blit(k_ShapeLightTexture0ID, Shader.PropertyToID("_ShadowsBlur"), m_Renderer2DData.ShadowBlurBlitMaterial, 0);
+                                cmd.Blit(Shader.PropertyToID("_ShadowsBlur"), k_ShapeLightTexture0ID, m_Renderer2DData.ShadowBlurBlitMaterial, 1);
+
+                                cmd.ReleaseTemporaryRT(Shader.PropertyToID("_ShadowsBlur"));
+                                context.ExecuteCommandBuffer(cmd);
+                                cmd.Clear();
+                            }
+                            //
                         }
                         else
                         {
                             this.ClearDirtyLighting(cmd, lightStats.blendStylesUsed);
                         }
 
-                        // CUSTOM CODE
-                        // Shadow smoothing
-                        if(m_Renderer2DData.ShadowBlurBlitMaterial != null)
-                        {
-                            RenderTextureDescriptor desc = renderingData.cameraData.cameraTargetDescriptor;
-
-                            cmd.GetTemporaryRT(Shader.PropertyToID("_ShadowsBlur"), desc.width, desc.height, 0, FilterMode.Bilinear, RenderTextureFormat.RGB111110Float);
-
-                            cmd.Blit(k_ShapeLightTexture0ID, Shader.PropertyToID("_ShadowsBlur"), m_Renderer2DData.ShadowBlurBlitMaterial, 0);
-                            cmd.Blit(Shader.PropertyToID("_ShadowsBlur"), k_ShapeLightTexture0ID, m_Renderer2DData.ShadowBlurBlitMaterial, 1);
-
-                            cmd.ReleaseTemporaryRT(Shader.PropertyToID("_ShadowsBlur"));
-                            context.ExecuteCommandBuffer(cmd);
-                            cmd.Clear();
-                        }
-                        //
-
                         CoreUtils.SetRenderTarget(cmd,
-                            // CUSTOM CODE
-                            colorAttachments,
-                            //
-                            depthAttachment, ClearFlag.None, Color.white);
+                                                  // CUSTOM CODE
+                                                  colorAttachments,
+                                                  //
+                                                  depthAttachment, ClearFlag.None, Color.white);
                         context.ExecuteCommandBuffer(cmd);
 
                         Profiler.BeginSample("RenderSpritesWithLighting - Draw Transparent Renderers");
