@@ -429,8 +429,27 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 if ((blendStylesUsed & (uint)(1 << i)) == 0)
                     continue;
 
-                var sampleName = "BlendStyle:" + blendStyles[i].name + " Layer:" + layerToRender;
+                // CUSTOM CODE
+#if UNITY_EDITOR
+
+                SortingLayer[] layers = Light2DManager.GetCachedSortingLayer();
+                string layerName = layerToRender.ToString();
+
+                for(int l = 0; l < layers.Length; ++l)
+                {
+                    if(layers[l].id == layerToRender)
+                    {
+                        layerName = layers[l].name;
+                    }
+                }
+
+                string sampleName = "BlendStyle:" + blendStyles[i].name + " Layer:" + layerName;
+#else
+                string sampleName = "BlendStyle:" + blendStyles[i].name + " Layer:" + layerToRender;
+#endif
+
                 cmd.BeginSample(sampleName);
+                //
 
                 var rtID = pass.rendererData.lightBlendStyles[i].renderTargetHandle.Identifier();
                 cmd.SetRenderTarget(rtID);
@@ -454,7 +473,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
                 pass.rendererData.lightBlendStyles[i].isDirty = rtDirty;
 
+                // CUSTOM CODE
                 cmd.EndSample(sampleName);
+                //
             }
         }
 
@@ -467,8 +488,27 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 if ((blendStylesUsed & (uint)(1 << i)) == 0)
                     continue;
 
+                // CUSTOM CODE
+#if UNITY_EDITOR
+
+                SortingLayer[] layers = Light2DManager.GetCachedSortingLayer();
+                string layerName = layerToRender.ToString();
+
+                for (int l = 0; l < layers.Length; ++l)
+                {
+                    if (layers[l].id == layerToRender)
+                    {
+                        layerName = layers[l].name;
+                    }
+                }
+
+                string sampleName = "VOLUMES=BlendStyle:" + blendStyles[i].name + " Layer:" + layerName;
+#else
                 string sampleName = "VOLUMES=BlendStyle:" + blendStyles[i].name + " Layer:" + layerToRender;
+#endif
+
                 cmd.BeginSample(sampleName);
+                //
 
                 RenderLightVolumeSet(
                     pass, renderingData,
