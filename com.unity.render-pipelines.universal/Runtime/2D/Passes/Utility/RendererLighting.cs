@@ -520,7 +520,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     pass.rendererData.lightCullResult.visibleLights
                 );
 
+                // CUSTOM CODE
                 cmd.EndSample(sampleName);
+                //
             }
         }
 

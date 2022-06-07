@@ -154,7 +154,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             var srcUVs = sprite.GetVertexAttribute<Vector2>(VertexAttribute.TexCoord0);
             var srcIndices = sprite.GetIndices();
 
-            var center = 0.5f * (sprite.bounds.min + sprite.bounds.max);
+            Vector3 center = new Vector3(0.0f, sprite.pivot.y / sprite.rect.height * (sprite.bounds.min.y + sprite.bounds.max.y), 0.0f);
             var vertices = new NativeArray<SpriteLightMeshVertex>(srcIndices.Length, Allocator.Temp);
             var color = new Color(0,0,0, 1);
 

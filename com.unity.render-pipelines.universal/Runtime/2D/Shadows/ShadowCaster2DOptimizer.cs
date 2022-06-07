@@ -31,14 +31,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
             }
         }
 
-        protected new void OnEnable()
-        {
-            if(!Application.isPlaying)
-            {
-                GenerateBlendedMesh();
-            }
-        }
-
         public void GenerateBlendedMesh()
         {
             ShadowCaster2D[] shadowCasters = transform.GetComponentsInChildren<ShadowCaster2D>(true);
