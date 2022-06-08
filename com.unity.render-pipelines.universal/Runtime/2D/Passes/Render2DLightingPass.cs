@@ -174,16 +174,25 @@ namespace UnityEngine.Experimental.Rendering.Universal
                             // Shadow smoothing
                             if (m_Renderer2DData.ShadowBlurBlitMaterial != null)
                             {
-                                RenderTextureDescriptor desc = renderingData.cameraData.cameraTargetDescriptor;
+                                int[] lightTextures = new int[] { k_ShapeLightTexture1ID,   // blend mode: additive
+                                                                  k_ShapeLightTexture0ID }; // blend mode: multiply
 
-                                cmd.GetTemporaryRT(Shader.PropertyToID("_ShadowsBlur"), desc.width, desc.height, 0, FilterMode.Bilinear, RenderTextureFormat.RGB111110Float);
+                                for(int j = 0; j < blendStylesCount && j < lightTextures.Length; ++j)
+                                {
+                                    if ((lightStats.blendStylesUsed & (1 << i)) != 0)
+                                    {
+                                        RenderTextureDescriptor desc = renderingData.cameraData.cameraTargetDescriptor;
 
-                                cmd.Blit(k_ShapeLightTexture0ID, Shader.PropertyToID("_ShadowsBlur"), m_Renderer2DData.ShadowBlurBlitMaterial, 0);
-                                cmd.Blit(Shader.PropertyToID("_ShadowsBlur"), k_ShapeLightTexture0ID, m_Renderer2DData.ShadowBlurBlitMaterial, 1);
+                                        cmd.GetTemporaryRT(Shader.PropertyToID("_ShadowsBlur"), desc.width, desc.height, 0, FilterMode.Bilinear, RenderTextureFormat.RGB111110Float);
 
-                                cmd.ReleaseTemporaryRT(Shader.PropertyToID("_ShadowsBlur"));
-                                context.ExecuteCommandBuffer(cmd);
-                                cmd.Clear();
+                                        cmd.Blit(lightTextures[j], Shader.PropertyToID("_ShadowsBlur"), m_Renderer2DData.ShadowBlurBlitMaterial, 0);
+                                        cmd.Blit(Shader.PropertyToID("_ShadowsBlur"), lightTextures[j], m_Renderer2DData.ShadowBlurBlitMaterial, 1);
+
+                                        cmd.ReleaseTemporaryRT(Shader.PropertyToID("_ShadowsBlur"));
+                                        context.ExecuteCommandBuffer(cmd);
+                                        cmd.Clear();
+                                    }
+                                }
                             }
                             //
                         }
