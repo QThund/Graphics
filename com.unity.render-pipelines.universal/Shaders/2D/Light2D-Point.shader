@@ -23,6 +23,9 @@ Shader "Hidden/Light2D-Point"
             #pragma multi_compile_local LIGHT_QUALITY_FAST __
             #pragma multi_compile_local USE_NORMAL_MAP __
             #pragma multi_compile_local USE_ADDITIVE_BLENDING __
+            // CUSTOM CODE
+            #pragma multi_compile_local USE_VOLUME_TEXTURES __
+            //
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/LightingUtility.hlsl"
@@ -39,6 +42,11 @@ Shader "Hidden/Light2D-Point"
                 half2   uv              : TEXCOORD0;
                 half2	lookupUV        : TEXCOORD2;  // This is used for light relative direction
                 half2	lookupNoRotUV   : TEXCOORD3;  // This is used for screen relative direction of a light
+                // CUSTOM CODE
+#ifdef USE_VOLUME_TEXTURES
+                float2  originPos : TEXCOORD7;
+#endif
+                //
 
                 NORMALS_LIGHTING_COORDS(TEXCOORD4, TEXCOORD5)
                 SHADOW_COORDS(TEXCOORD6)
@@ -69,6 +77,59 @@ Shader "Hidden/Light2D-Point"
             half	    _InverseHDREmulationScale;
             half        _IsFullSpotlight;
 
+            // CUSTOM CODE
+#ifdef USE_VOLUME_TEXTURES
+
+            CBUFFER_START(UnityPerMaterial)
+                float  _VolumeTextureCount;
+
+                float  _VolumeTexture0Scale;
+                float  _VolumeTexture1Scale;
+                float  _VolumeTexture2Scale;
+                float  _VolumeTexture3Scale;
+
+                float  _VolumeTexture0TimeScale;
+                float  _VolumeTexture1TimeScale;
+                float  _VolumeTexture2TimeScale;
+                float  _VolumeTexture3TimeScale;
+
+                float  _VolumeTexture0Power;
+                float  _VolumeTexture1Power;
+                float  _VolumeTexture2Power;
+                float  _VolumeTexture3Power;
+
+                float2  _VolumeTexture0Direction;
+                float2  _VolumeTexture1Direction;
+                float2  _VolumeTexture2Direction;
+                float2  _VolumeTexture3Direction;
+
+                float  _VolumeTexture0AlphaMultiplier;
+                float  _VolumeTexture1AlphaMultiplier;
+                float  _VolumeTexture2AlphaMultiplier;
+                float  _VolumeTexture3AlphaMultiplier;
+
+                float  _VolumeTexture0AspectRatio;
+                float  _VolumeTexture1AspectRatio;
+                float  _VolumeTexture2AspectRatio;
+                float  _VolumeTexture3AspectRatio;
+
+                float  _VolumeTexture0IsAdditive;
+                float  _VolumeTexture1IsAdditive;
+                float  _VolumeTexture2IsAdditive;
+                float  _VolumeTexture3IsAdditive;
+            CBUFFER_END
+
+            TEXTURE2D(_VolumeTexture0);
+            SAMPLER(sampler_VolumeTexture0);
+            TEXTURE2D(_VolumeTexture1);
+            SAMPLER(sampler_VolumeTexture1);
+            TEXTURE2D(_VolumeTexture2);
+            SAMPLER(sampler_VolumeTexture2);
+            TEXTURE2D(_VolumeTexture3);
+            SAMPLER(sampler_VolumeTexture3);
+#endif
+            //
+
             Varyings vert(Attributes input)
             {
                 Varyings output = (Varyings)0;
@@ -84,6 +145,12 @@ Shader "Hidden/Light2D-Point"
                 float halfTexelOffset = 0.5 * _LightLookup_TexelSize.x;
                 output.lookupUV = 0.5 * (lightSpacePos.xy + 1) + halfTexelOffset;
                 output.lookupNoRotUV = 0.5 * (lightSpaceNoRotPos.xy + 1) + halfTexelOffset;
+
+                // CUSTOM CODE
+#ifdef USE_VOLUME_TEXTURES
+                output.originPos = ComputeScreenPos(mul(UNITY_MATRIX_VP, float4(0.0f, 0.0f, 0.0f, 1.0f)) / output.positionCS.w);
+#endif
+                //
 
                 TRANSFER_NORMALS_LIGHTING(output, worldSpacePos)
                 TRANSFER_SHADOWS(output)
@@ -121,6 +188,32 @@ Shader "Hidden/Light2D-Point"
 #else
                 lightColor.a = attenuation;
 #endif
+
+                // CUSTOM CODE
+#ifdef USE_VOLUME_TEXTURES
+
+                float defaultVolumeTexture0Alpha = 0.0f;
+                float defaultVolumeTexture1Alpha = _VolumeTexture1IsAdditive ? 0.0f : 1.0f;
+                float defaultVolumeTexture2Alpha = _VolumeTexture2IsAdditive ? 0.0f : 1.0f;
+                float defaultVolumeTexture3Alpha = _VolumeTexture3IsAdditive ? 0.0f : 1.0f;
+
+                float2 position = (input.positionCS.xy / _ScreenParams.xy - input.originPos.xy);
+                float volumeTexture0Alpha = _VolumeTextureCount == 0.0f ? defaultVolumeTexture0Alpha : SAMPLE_TEXTURE2D(_VolumeTexture0, sampler_VolumeTexture0, position / _VolumeTexture0Scale * float2(1.0f, _VolumeTexture0AspectRatio) - _VolumeTexture0Direction * _Time * _VolumeTexture0TimeScale).a;
+                float volumeTexture1Alpha = _VolumeTextureCount < 1.5f ? defaultVolumeTexture1Alpha : SAMPLE_TEXTURE2D(_VolumeTexture1, sampler_VolumeTexture1, position / _VolumeTexture1Scale * float2(1.0f, _VolumeTexture1AspectRatio) - _VolumeTexture1Direction * _Time * _VolumeTexture1TimeScale).a;
+                float volumeTexture2Alpha = _VolumeTextureCount < 2.5f ? defaultVolumeTexture2Alpha : SAMPLE_TEXTURE2D(_VolumeTexture2, sampler_VolumeTexture2, position / _VolumeTexture2Scale * float2(1.0f, _VolumeTexture2AspectRatio) - _VolumeTexture2Direction * _Time * _VolumeTexture2TimeScale).a;
+                float volumeTexture3Alpha = _VolumeTextureCount < 3.5f ? defaultVolumeTexture3Alpha : SAMPLE_TEXTURE2D(_VolumeTexture3, sampler_VolumeTexture3, position / _VolumeTexture3Scale * float2(1.0f, _VolumeTexture3AspectRatio) - _VolumeTexture3Direction * _Time * _VolumeTexture3TimeScale).a;
+                volumeTexture0Alpha = _VolumeTextureCount == 0.0f ? defaultVolumeTexture0Alpha : pow(volumeTexture0Alpha, _VolumeTexture0Power) * _VolumeTexture0AlphaMultiplier;
+                volumeTexture1Alpha = _VolumeTextureCount < 1.5f ? defaultVolumeTexture1Alpha : pow(volumeTexture1Alpha, _VolumeTexture1Power) * _VolumeTexture1AlphaMultiplier;
+                volumeTexture2Alpha = _VolumeTextureCount < 2.5f ? defaultVolumeTexture2Alpha : pow(volumeTexture2Alpha, _VolumeTexture2Power) * _VolumeTexture2AlphaMultiplier;
+                volumeTexture3Alpha = _VolumeTextureCount < 3.5f ? defaultVolumeTexture3Alpha : pow(volumeTexture3Alpha, _VolumeTexture3Power) * _VolumeTexture3AlphaMultiplier;
+                float volumeAlpha = volumeTexture0Alpha;
+                volumeAlpha = _VolumeTexture1IsAdditive ? volumeAlpha + volumeTexture1Alpha : volumeAlpha * volumeTexture1Alpha;
+                volumeAlpha = _VolumeTexture2IsAdditive ? volumeAlpha + volumeTexture2Alpha : volumeAlpha * volumeTexture2Alpha;
+                volumeAlpha = _VolumeTexture3IsAdditive ? volumeAlpha + volumeTexture3Alpha : volumeAlpha * volumeTexture3Alpha;
+
+                lightColor *= _VolumeTextureCount == 0.0f ? 1.0f : volumeAlpha;
+#endif
+                //
 
                 APPLY_NORMALS_LIGHTING(input, lightColor);
                 APPLY_SHADOWS(input, lightColor, _ShadowIntensity);

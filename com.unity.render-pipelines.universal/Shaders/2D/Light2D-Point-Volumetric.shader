@@ -15,6 +15,9 @@ Shader "Hidden/Light2d-Point-Volumetric"
             #pragma fragment frag
             #pragma multi_compile_local USE_POINT_LIGHT_COOKIES __
             #pragma multi_compile_local LIGHT_QUALITY_FAST __
+            // CUSTOM CODE
+            #pragma multi_compile_local USE_VOLUME_TEXTURES __
+            //
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/LightingUtility.hlsl"
@@ -33,7 +36,9 @@ Shader "Hidden/Light2d-Point-Volumetric"
                 half2	lookupUV        : TEXCOORD2;  // This is used for light relative direction
                 half2	lookupNoRotUV   : TEXCOORD3;  // This is used for screen relative direction of a light
                 // CUSTOM CODE
+#ifdef USE_VOLUME_TEXTURES
                 float2  originPos : TEXCOORD6;
+#endif
                 //
 
 #if LIGHT_QUALITY_FAST
@@ -73,6 +78,8 @@ Shader "Hidden/Light2d-Point-Volumetric"
             half    _IsFullSpotlight;
 
             // CUSTOM CODE
+#ifdef USE_VOLUME_TEXTURES
+
             CBUFFER_START(UnityPerMaterial)
                 float  _VolumeTextureCount;
 
@@ -120,6 +127,7 @@ Shader "Hidden/Light2d-Point-Volumetric"
             SAMPLER(sampler_VolumeTexture2);
             TEXTURE2D(_VolumeTexture3);
             SAMPLER(sampler_VolumeTexture3);
+#endif
             //
 
             SHADOW_VARIABLES
@@ -150,7 +158,9 @@ Shader "Hidden/Light2d-Point-Volumetric"
 #endif
 
                 // CUSTOM CODE
+#ifdef USE_VOLUME_TEXTURES
                 output.originPos = ComputeScreenPos(mul(UNITY_MATRIX_VP, float4(0.0f, 0.0f, 0.0f, 1.0f)) / output.positionCS.w);
+#endif
                 //
 
                 float4 clipVertex = output.positionCS / output.positionCS.w;
@@ -179,7 +189,15 @@ Shader "Hidden/Light2d-Point-Volumetric"
                 mappedUV.y = _FalloffIntensity;
                 attenuation = SAMPLE_TEXTURE2D(_FalloffLookup, sampler_FalloffLookup, mappedUV).r;
 
+#if USE_POINT_LIGHT_COOKIES
+                half4 cookieColor = SAMPLE_TEXTURE2D(_PointLightCookieTex, sampler_PointLightCookieTex, input.lookupUV);
+                half4 lightColor = cookieColor * _LightColor * attenuation;
+#else
+                half4 lightColor = _LightColor * attenuation;
+#endif
                 // CUSTOM CODE
+#ifdef USE_VOLUME_TEXTURES
+
                 float defaultVolumeTexture0Alpha = 0.0f;
                 float defaultVolumeTexture1Alpha = _VolumeTexture1IsAdditive ? 0.0f : 1.0f;
                 float defaultVolumeTexture2Alpha = _VolumeTexture2IsAdditive ? 0.0f : 1.0f;
@@ -190,24 +208,17 @@ Shader "Hidden/Light2d-Point-Volumetric"
                 float volumeTexture1Alpha = _VolumeTextureCount < 1.5f ? defaultVolumeTexture1Alpha : SAMPLE_TEXTURE2D(_VolumeTexture1, sampler_VolumeTexture1, position / _VolumeTexture1Scale * float2(1.0f, _VolumeTexture1AspectRatio) - _VolumeTexture1Direction * _Time * _VolumeTexture1TimeScale).a;
                 float volumeTexture2Alpha = _VolumeTextureCount < 2.5f ? defaultVolumeTexture2Alpha : SAMPLE_TEXTURE2D(_VolumeTexture2, sampler_VolumeTexture2, position / _VolumeTexture2Scale * float2(1.0f, _VolumeTexture2AspectRatio) - _VolumeTexture2Direction * _Time * _VolumeTexture2TimeScale).a;
                 float volumeTexture3Alpha = _VolumeTextureCount < 3.5f ? defaultVolumeTexture3Alpha : SAMPLE_TEXTURE2D(_VolumeTexture3, sampler_VolumeTexture3, position / _VolumeTexture3Scale * float2(1.0f, _VolumeTexture3AspectRatio) - _VolumeTexture3Direction * _Time * _VolumeTexture3TimeScale).a;
-                volumeTexture0Alpha = pow(volumeTexture0Alpha, _VolumeTexture0Power) * _VolumeTexture0AlphaMultiplier;
-                volumeTexture1Alpha = pow(volumeTexture1Alpha, _VolumeTexture1Power) * _VolumeTexture1AlphaMultiplier;
-                volumeTexture2Alpha = pow(volumeTexture2Alpha, _VolumeTexture2Power) * _VolumeTexture2AlphaMultiplier;
-                volumeTexture3Alpha = pow(volumeTexture3Alpha, _VolumeTexture3Power) * _VolumeTexture3AlphaMultiplier;
+                volumeTexture0Alpha = _VolumeTextureCount == 0.0f ? defaultVolumeTexture0Alpha : pow(volumeTexture0Alpha, _VolumeTexture0Power) * _VolumeTexture0AlphaMultiplier;
+                volumeTexture1Alpha = _VolumeTextureCount < 1.5f ? defaultVolumeTexture1Alpha : pow(volumeTexture1Alpha, _VolumeTexture1Power) * _VolumeTexture1AlphaMultiplier;
+                volumeTexture2Alpha = _VolumeTextureCount < 2.5f ? defaultVolumeTexture2Alpha : pow(volumeTexture2Alpha, _VolumeTexture2Power) * _VolumeTexture2AlphaMultiplier;
+                volumeTexture3Alpha = _VolumeTextureCount < 3.5f ? defaultVolumeTexture3Alpha : pow(volumeTexture3Alpha, _VolumeTexture3Power) * _VolumeTexture3AlphaMultiplier;
                 float volumeAlpha = volumeTexture0Alpha;
                 volumeAlpha = _VolumeTexture1IsAdditive ? volumeAlpha + volumeTexture1Alpha : volumeAlpha * volumeTexture1Alpha;
                 volumeAlpha = _VolumeTexture2IsAdditive ? volumeAlpha + volumeTexture2Alpha : volumeAlpha * volumeTexture2Alpha;
                 volumeAlpha = _VolumeTexture3IsAdditive ? volumeAlpha + volumeTexture3Alpha : volumeAlpha * volumeTexture3Alpha;
-                //
 
-#if USE_POINT_LIGHT_COOKIES
-                half4 cookieColor = SAMPLE_TEXTURE2D(_PointLightCookieTex, sampler_PointLightCookieTex, input.lookupUV);
-                half4 lightColor = cookieColor * _LightColor * attenuation;
-#else
-                half4 lightColor = _LightColor * attenuation;
-#endif
-                // CUSTOM CODE
                 lightColor.a *= _VolumeTextureCount == 0.0f ? 1.0f : volumeAlpha;
+#endif
                 //
 
                 APPLY_SHADOWS(input, lightColor, _ShadowVolumeIntensity);

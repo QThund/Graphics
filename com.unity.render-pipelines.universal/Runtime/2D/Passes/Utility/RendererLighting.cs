@@ -13,6 +13,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
         private static readonly string k_UsePointLightCookiesKeyword = "USE_POINT_LIGHT_COOKIES";
         private static readonly string k_LightQualityFastKeyword = "LIGHT_QUALITY_FAST";
         private static readonly string k_UseNormalMap = "USE_NORMAL_MAP";
+        // CUSTOM CODE
+        private static readonly string k_UseVolumeTextures = "USE_VOLUME_TEXTURES";
+        private static readonly string k_UseDithering = "USE_DITHERING";
+        //
         private static readonly string k_UseAdditiveBlendingKeyword = "USE_ADDITIVE_BLENDING";
 
         private static readonly string[] k_UseBlendStyleKeywords =
@@ -219,6 +223,23 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
                     if (light.useNormalMap || light.lightType == Light2D.LightType.Point)
                         SetPointLightShaderGlobals(cmd, light);
+
+                    // CUSTOM CODE
+                    int volumeTextureCount = Mathf.Min(VOLUME_TEXTURE_COUNT, light.volumeTextures.Length);
+                    cmd.SetGlobalFloat(k_VolumeTextureCount, volumeTextureCount);
+
+                    for (int j = 0; j < volumeTextureCount; ++j)
+                    {
+                        cmd.SetGlobalTexture(k_VolumeTextureIDs[j], light.volumeTextures[j].Texture);
+                        cmd.SetGlobalVector(k_VolumeTextureDirectionIDs[j], light.volumeTextures[j].Direction);
+                        cmd.SetGlobalFloat(k_VolumeTexturePowerIDs[j], light.volumeTextures[j].Power);
+                        cmd.SetGlobalFloat(k_VolumeTextureScaleIDs[j], light.volumeTextures[j].Scale);
+                        cmd.SetGlobalFloat(k_VolumeTextureTimeScaleIDs[j], light.volumeTextures[j].TimeScale);
+                        cmd.SetGlobalFloat(k_VolumeTextureAspectRatioIDs[j], light.volumeTextures[j].AspectRatio);
+                        cmd.SetGlobalFloat(k_VolumeTextureAlphaMultiplierIDs[j], light.volumeTextures[j].AlphaMultiplier);
+                        cmd.SetGlobalFloat(k_VolumeTextureIsAdditiveIDs[j], light.volumeTextures[j].IsAdditive ? 1.0f : 0.0f);
+                    }
+                    //
 
                     // Light code could be combined...
                     if (light.lightType == Light2D.LightType.Parametric || light.lightType == Light2D.LightType.Freeform || light.lightType == Light2D.LightType.Sprite)
@@ -550,7 +571,18 @@ namespace UnityEngine.Experimental.Rendering.Universal
             bitIndex++;
             var useNormalMap = light.useNormalMap ? 1u << bitIndex : 0u;
 
-            return pointFastQualityBit | pointCookieBit | spriteBit | additiveBit | shapeBit | volumeBit | useNormalMap;
+            // CUSTOM CODE
+            bitIndex++;
+            var useVolumeTextures = light.volumeTextures.Length > 0 ? 1u << bitIndex : 0u;
+            bitIndex++;
+            var useDithering = light.isDitheringEnabled ? 1u << bitIndex : 0u;
+            //
+
+            return pointFastQualityBit | pointCookieBit | spriteBit | additiveBit | shapeBit | volumeBit | useNormalMap
+                // CUSTOM CODE
+                | useVolumeTextures | useDithering
+                //
+                ;
         }
 
         private static Material CreateLightMaterial(Renderer2DData rendererData, Light2D light, bool isVolume)
@@ -584,6 +616,14 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
             if (light.useNormalMap)
                 material.EnableKeyword(k_UseNormalMap);
+
+            // CUSTOM CODE
+            if (light.volumeTextures.Length > 0)
+                material.EnableKeyword(k_UseVolumeTextures);
+
+            if(light.isDitheringEnabled)
+                material.EnableKeyword(k_UseDithering);
+            //
 
             return material;
         }

@@ -326,13 +326,13 @@ namespace UnityEditor.Experimental.Rendering.Universal
                     EditorGUILayout.PropertyField(m_ShapeLightFalloffOffset, Styles.shapeLightFalloffOffset);
                     EditorGUIUtility.wideMode = oldWideMode;
                 }
-
-                // CUSTOM CODE
-                EditorGUILayout.PropertyField(m_VolumeTextures, Styles.generalVolumeTextures);
-                EditorGUILayout.PropertyField(m_IsDitheringEnabled, Styles.generalIsDithering);
-                EditorGUILayout.PropertyField(m_DitheringTexture, Styles.generalDitheringTexture);
-                //
             }
+
+            // CUSTOM CODE
+            EditorGUILayout.PropertyField(m_VolumeTextures, Styles.generalVolumeTextures);
+            EditorGUILayout.PropertyField(m_IsDitheringEnabled, Styles.generalIsDithering);
+            EditorGUILayout.PropertyField(m_DitheringTexture, Styles.generalDitheringTexture);
+            //
         }
 
         Vector3 DrawAngleSlider2D(Transform transform, Quaternion rotation, float radius, float offset, Handles.CapFunction capFunc, float capSize, bool leftAngle, bool drawLine, bool useCapOffset, ref float angle)
