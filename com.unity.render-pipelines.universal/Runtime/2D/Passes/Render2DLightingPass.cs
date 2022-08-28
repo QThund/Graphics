@@ -174,12 +174,12 @@ namespace UnityEngine.Experimental.Rendering.Universal
                             // Shadow smoothing
                             if (m_Renderer2DData.ShadowBlurBlitMaterial != null)
                             {
-                                int[] lightTextures = new int[] { k_ShapeLightTexture1ID,   // blend mode: additive
-                                                                  k_ShapeLightTexture0ID }; // blend mode: multiply
+                                int[] lightTextures = new int[] { k_ShapeLightTexture0ID,   // blend mode: multiply
+                                                                  k_ShapeLightTexture1ID }; // blend mode: additive
 
-                                for(int j = 0; j < blendStylesCount && j < lightTextures.Length; ++j)
+                                for (int j = 0; j < blendStylesCount && j < lightTextures.Length; ++j)
                                 {
-                                    if ((lightStats.blendStylesUsed & (1 << i)) != 0)
+                                    if ((lightStats.blendStylesUsed & (1 << j)) != 0)
                                     {
                                         RenderTextureDescriptor desc = renderingData.cameraData.cameraTargetDescriptor;
 
