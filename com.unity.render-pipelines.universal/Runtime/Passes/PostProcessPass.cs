@@ -930,9 +930,12 @@ namespace UnityEngine.Rendering.Universal.Internal
 
         void SetupBloom(CommandBuffer cmd, int source, Material uberMaterial)
         {
+            // CUSTOM CODE
+            // Note: Executing the pre-filter shader step (see first Blit below) with half the size was producing loss of precision, which made shiny pixels flickering as camera moved
             // Start at half-res
-            int tw = m_Descriptor.width >> 1;
-            int th = m_Descriptor.height >> 1;
+            int tw = m_Descriptor.width;// >> 1;
+            int th = m_Descriptor.height;// >> 1;
+            //
 
             // Determine the iteration count
             int maxSize = Mathf.Max(tw, th);
