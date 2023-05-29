@@ -18,6 +18,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         DisplacementPostProcessPass m_DisplacementPostProcessPass;
         ScreenBorderPostProcessPass m_ScreenBorderPostProcessPass;
         VignettePostProcessPass m_VignettePostProcessPass;
+        OverlayImagePostProcessPass m_OverlayImagePostProcessPass;
         GlitchDistortionPostProcessPass m_GlitchDistortionPostProcessPass;
         ScreenScalingPostProcessPass m_ScreenScalingPostProcessPass;
         SunShaftsPostProcessPass m_SunShaftsPostProcessPass;
@@ -57,6 +58,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             m_PixelPerfectBackgroundPass = new PixelPerfectBackgroundPass(RenderPassEvent.AfterRendering + 1);
             m_FinalBlitPass = new FinalBlitPass(RenderPassEvent.AfterRendering + 1, m_BlitMaterial);
             // CUSTOM CODE
+            m_OverlayImagePostProcessPass = new OverlayImagePostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_DisplacementPostProcessPass = new DisplacementPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_ScreenBorderPostProcessPass = new ScreenBorderPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_VignettePostProcessPass = new VignettePostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
@@ -341,6 +343,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
             // CUSTOM CODE
             if (cameraData.postProcessEnabled)
             {
+                m_OverlayImagePostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle);
+                EnqueuePass(m_OverlayImagePostProcessPass);
+
                 m_GlitchDistortionPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle);
                 EnqueuePass(m_GlitchDistortionPostProcessPass);
 
