@@ -25,7 +25,7 @@ namespace UnityEngine.Rendering.Universal.Internal
         public SunShaftsPostProcessPass(RenderPassEvent evt, PostProcessData data, Material blitMaterial)
         {
             m_radialBlurMaterial = new Material(Shader.Find("Game/S_RadialBlurPostProcess"));
-            m_gaussianBlurMaterial = new Material(Shader.Find("Universal Render Pipeline/2D/BlurFx"));
+            m_gaussianBlurMaterial = new Material(Shader.Find("Game/S_GaussianBlurPostProcess"));
             m_postProcessMaterial = new Material(Shader.Find("Game/S_SunShaftsPostProcess"));
             base.profilingSampler = new ProfilingSampler(nameof(PostProcessPass));
             renderPassEvent = evt;

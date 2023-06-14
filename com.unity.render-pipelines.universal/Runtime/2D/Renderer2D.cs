@@ -19,6 +19,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         ScreenBorderPostProcessPass m_ScreenBorderPostProcessPass;
         VignettePostProcessPass m_VignettePostProcessPass;
         OverlayImagePostProcessPass m_OverlayImagePostProcessPass;
+        GaussianBlurPostProcessPass m_GaussianBlurPostProcessPass;
         GlitchDistortionPostProcessPass m_GlitchDistortionPostProcessPass;
         ScreenScalingPostProcessPass m_ScreenScalingPostProcessPass;
         SunShaftsPostProcessPass m_SunShaftsPostProcessPass;
@@ -58,6 +59,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             m_PixelPerfectBackgroundPass = new PixelPerfectBackgroundPass(RenderPassEvent.AfterRendering + 1);
             m_FinalBlitPass = new FinalBlitPass(RenderPassEvent.AfterRendering + 1, m_BlitMaterial);
             // CUSTOM CODE
+            m_GaussianBlurPostProcessPass = new GaussianBlurPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_OverlayImagePostProcessPass = new OverlayImagePostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_DisplacementPostProcessPass = new DisplacementPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
             m_ScreenBorderPostProcessPass = new ScreenBorderPostProcessPass(RenderPassEvent.BeforeRenderingPostProcessing, data.postProcessData, m_BlitMaterial);
@@ -254,6 +256,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
             CommandBufferPool.Release(cmd);
 
             // CUSTOM CODE
+            // When using different cameras, this makes that the next camera uses the previous PPFX result texture as base color texture
+            // Otherwise it would use the color texture without PPFX
+            cmd.Blit(k_AfterPostProcessColorHandle.Identifier(), colorTargetHandle.Identifier());
+
             // Clearing camera render texture, if any, and additional render targets
             if(renderingData.cameraData.camera.targetTexture != null && !renderingData.cameraData.isSceneViewCamera)
             {
@@ -343,6 +349,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
             // CUSTOM CODE
             if (cameraData.postProcessEnabled)
             {
+                m_GaussianBlurPostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle);
+                EnqueuePass(m_GaussianBlurPostProcessPass);
+
                 m_OverlayImagePostProcessPass.Setup(cameraTargetDescriptor, colorTargetHandle);
                 EnqueuePass(m_OverlayImagePostProcessPass);
 
