@@ -161,19 +161,21 @@ Shader "Game/S_GaussianBlurPostProcess"
 					//get uv coordinate of sample
 					float2 uv = i.uv + float2(offset, 0);
 
-				#if !GAUSS
-					// simply add the color if we don't have a gaussian blur (box)
-					finalColor += tex2D(_MainTex, uv);
-				#else
-					// calculate the result of the gaussian function
-					float stDevSquared = _StandardDeviation * _StandardDeviation;
-					float gauss = (1 / sqrt(2 * PI * stDevSquared)) * pow(E, -((offset * offset) / (2 * stDevSquared)));
-					// add result to sum
-					sum += gauss;
-					// multiply color with influence from gaussian function and add it to sum color
-					finalColor += tex2D(_MainTex, uv) * gauss;
-				#endif
-
+                    if (_Gauss == 0.0f)
+                    {
+                        // simply add the color if we don't have a gaussian blur (box)
+                        finalColor += tex2D(_MainTex, uv);
+                    }
+                    else
+                    {
+                        // calculate the result of the gaussian function
+                        float stDevSquared = _StandardDeviation * _StandardDeviation;
+                        float gauss = (1 / sqrt(2 * PI * stDevSquared)) * pow(E, -((offset * offset) / (2 * stDevSquared)));
+                        // add result to sum
+                        sum += gauss;
+                        // multiply color with influence from gaussian function and add it to sum color
+                        finalColor += tex2D(_MainTex, uv) * gauss;
+                    }
 				}
 
 				// divide the sum of values by the amount of samples
