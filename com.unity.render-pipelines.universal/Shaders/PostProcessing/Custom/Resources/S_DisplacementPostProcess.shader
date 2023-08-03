@@ -51,7 +51,8 @@ Shader "Game/S_DisplacementPostProcess"
                 float4 displacement = SAMPLE_TEXTURE2D(_DisplacementTexture, sampler_DisplacementTexture, i.uv);
                 float4 backgroundColor = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv);
                 float4 targetColor = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv + displacement.xy * 0.01f);
-                targetColor.rgb = targetColor.rgb * displacement.z + backgroundColor.rgb * (1.0f - displacement.z); // The color is blended accorting to the Z component of the displacement texture
+                displacement.z = saturate(displacement.z);
+                targetColor.rgb = targetColor.rgb * displacement.z + backgroundColor.rgb * (1.0f - displacement.z); // The color is blended according to the Z component of the displacement texture
                 return targetColor;
             }
             ENDHLSL
