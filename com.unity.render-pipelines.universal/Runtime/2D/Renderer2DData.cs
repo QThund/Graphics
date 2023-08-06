@@ -160,6 +160,22 @@ namespace UnityEngine.Experimental.Rendering.Universal
             }
         }
 
+        public bool IsShadowBlurringEnabled
+        {
+            get
+            {
+                return m_Enable2DShadowBlurring;
+            }
+
+            set
+            {
+                m_Enable2DShadowBlurring = value;
+            }
+        }
+
+        [SerializeField]
+        bool m_Enable2DShadowBlurring = true;
+
         [SerializeField]
         Material m_shadowBlurBlitMaterial;
         //

@@ -183,8 +183,15 @@ namespace UnityEngine.Experimental.Rendering.Universal
         }
 
 
-        private static bool RenderLightSet(IRenderPass2D pass, RenderingData renderingData, int blendStyleIndex, CommandBuffer cmd, int layerToRender, RenderTargetIdentifier renderTexture, bool rtNeedsClear, Color clearColor, List<Light2D> lights)
+        private static bool RenderLightSet(IRenderPass2D pass, RenderingData renderingData, int blendStyleIndex, CommandBuffer cmd, int layerToRender, RenderTargetIdentifier renderTexture, bool rtNeedsClear, Color clearColor, List<Light2D> lights
+            // CUSTOM CODE
+            , out bool hasRenderedShadows
+            //
+            )
         {
+            // CUSTOM CODE
+            hasRenderedShadows = false;
+            //
             var renderedAnyLight = false;
 
             foreach (var light in lights)
@@ -203,7 +210,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     if (lightMesh == null)
                         continue;
 
-                    ShadowRendering.RenderShadows(pass, renderingData, cmd, layerToRender, light, light.shadowIntensity, renderTexture, renderTexture);
+                    // CUSTOM CODE
+                    hasRenderedShadows |=
+                    //
+                        ShadowRendering.RenderShadows(pass, renderingData, cmd, layerToRender, light, light.shadowIntensity, renderTexture, renderTexture);
 
                     if (!renderedAnyLight && rtNeedsClear)
                     {
@@ -441,8 +451,16 @@ namespace UnityEngine.Experimental.Rendering.Universal
             context.DrawRenderers(cullResults, ref drawSettings, ref filterSettings);
         }
 
-        public static void RenderLights(this IRenderPass2D pass, RenderingData renderingData, CommandBuffer cmd, int layerToRender, uint blendStylesUsed)
+        public static void RenderLights(this IRenderPass2D pass, RenderingData renderingData, CommandBuffer cmd, int layerToRender, uint blendStylesUsed
+            // CUSTOM CODE
+            , out bool hasRenderedShadows
+            //
+            )
         {
+            // CUSTOM CODE
+            hasRenderedShadows = false;
+            bool hasRenderedShadowsForBlendingStyle = false;
+            //
             var blendStyles = pass.rendererData.lightBlendStyles;
 
             for (var i = 0; i < blendStyles.Length; ++i)
@@ -490,11 +508,16 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     (pass.rendererData.lightBlendStyles[i].isDirty || rtDirty),
                     clearColor,
                     pass.rendererData.lightCullResult.visibleLights
+                    // CUSTOM CODE
+                    , out hasRenderedShadowsForBlendingStyle
+                    //
                 );
 
                 pass.rendererData.lightBlendStyles[i].isDirty = rtDirty;
 
                 // CUSTOM CODE
+                hasRenderedShadows |= hasRenderedShadowsForBlendingStyle;
+
                 cmd.EndSample(sampleName);
                 //
             }

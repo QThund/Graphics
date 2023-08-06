@@ -168,11 +168,20 @@ namespace UnityEngine.Experimental.Rendering.Universal
                         cmd.Clear();
                         if (lightStats.totalLights > 0)
                         {
-                            this.RenderLights(renderingData, cmd, layerToRender, lightStats.blendStylesUsed);
+                            // CUSTOM CODE
+                            bool hasRenderedShadows = false;
+                            //
+                            this.RenderLights(renderingData, cmd, layerToRender, lightStats.blendStylesUsed
+                                // CUSTOM CODE
+                                , out hasRenderedShadows
+                                //
+                                );
 
                             // CUSTOM CODE
                             // Shadow smoothing
-                            if (m_Renderer2DData.ShadowBlurBlitMaterial != null)
+                            if (m_Renderer2DData.ShadowBlurBlitMaterial != null &&
+                                m_Renderer2DData.IsShadowBlurringEnabled &&
+                                hasRenderedShadows)
                             {
                                 int[] lightTextures = new int[] { k_ShapeLightTexture0ID,   // blend mode: multiply
                                                                   k_ShapeLightTexture1ID }; // blend mode: additive

@@ -52,8 +52,16 @@ namespace UnityEngine.Experimental.Rendering.Universal
             cmd.GetTemporaryRT(pass.rendererData.shadowsRenderTarget.id, descriptor, FilterMode.Bilinear);
         }
 
-        public static void RenderShadows(IRenderPass2D pass, RenderingData renderingData, CommandBuffer cmdBuffer, int layerToRender, Light2D light, float shadowIntensity, RenderTargetIdentifier renderTexture, RenderTargetIdentifier depthTexture)
+        public static
+            // CUSTOM CODE
+            bool
+            //
+            RenderShadows(IRenderPass2D pass, RenderingData renderingData, CommandBuffer cmdBuffer, int layerToRender, Light2D light, float shadowIntensity, RenderTargetIdentifier renderTexture, RenderTargetIdentifier depthTexture)
         {
+            // CUSTOM CODE
+            bool hasRendererShadows = false;
+            //
+
             cmdBuffer.SetGlobalFloat(k_ShadowIntensityID, 1 - light.shadowIntensity);
             cmdBuffer.SetGlobalFloat(k_ShadowVolumeIntensityID, 1 - light.shadowVolumeIntensity);
 
@@ -92,6 +100,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
                         if (shadowCasters != null)
                         {
+                            // CUSTOM CODE
+                            hasRendererShadows |= shadowCasters.Count > 0;
+                            //
+
                             // Draw the shadow casting group first, then draw the silhouttes..
                             for (var i = 0; i < shadowCasters.Count; i++)
                             {
@@ -138,6 +150,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 cmdBuffer.ReleaseTemporaryRT(pass.rendererData.shadowsRenderTarget.id);
                 cmdBuffer.SetRenderTarget(renderTexture, depthTexture);
             }
+
+            // CUSTOM CODE
+            return hasRendererShadows;
+            //
         }
     }
 }
