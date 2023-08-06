@@ -56,38 +56,45 @@ Shader "Game/S_GaussianBlurPostProcess"
 			fixed4 frag(v2f i) : SV_TARGET
 			{
 				// failsafe so we can use turn off the blur by setting the deviation to 0
-				if (_Gauss != 0.0f && _StandardDeviation == 0.0f)
-				{
-					return tex2D(_MainTex, i.uv);
-				}
+				//if (_Gauss != 0.0f && _StandardDeviation == 0.0f)
+				//{
+				//	return tex2D(_MainTex, i.uv);
+				//}
 
 				float sum = _Gauss != 0.0f ? 0.0f : _Samples;
 
 				float4 finalColor = float4(0.0, 0.0, 0.0, 0.0);
 
+                // Optimization: this is part of the calculation of the gaussian fuction
+                float stDevSquared = _StandardDeviation * _StandardDeviation;
+                float gaussEquationFactor = 1.0f / sqrt(2.0f * PI * stDevSquared);
+                float gaussEquationFactor2 = 1.0f / (2.0f * stDevSquared);
+
+                // Optimization: offset
+                float offsetEquationFactor = 1.0f / (_Samples - 1);
+
 				// iterate over blur samples
 				for (float index = 0; index < _Samples; index++)
 				{
 					// get the offset of the sample
-					float offset = (index / (_Samples - 1) - 0.5f) * _BlurSize;
+					float offset = (index * offsetEquationFactor - 0.5f) * _BlurSize;
 					// get uv coordinate of sample
 					float2 uv = i.uv + float2(0.0f, offset);
 
-                    if (_Gauss == 0.0f)
-                    {
+                    //if (_Gauss == 0.0f)
+                    //{
                         // simply add the color if we don't have a gaussian blur (box)
-                        finalColor += tex2D(_MainTex, uv);
-                    }
-                    else
-                    {
+                    //    finalColor += tex2D(_MainTex, uv);
+                    //}
+                    //else
+                    //{
                         // calculate the result of the gaussian function
-                        float stDevSquared = _StandardDeviation * _StandardDeviation;
-                        float gauss = (1.0f / sqrt(2.0f * PI * stDevSquared)) * pow(E, -((offset * offset) / (2.0f * stDevSquared)));
+                        float gauss = gaussEquationFactor * pow(E, -((offset * offset) * gaussEquationFactor2));
                         // add result to sum
                         sum += gauss;
                         // multiply color with influence from gaussian function and add it to sum color
                         finalColor += tex2D(_MainTex, uv) * gauss;
-                    }
+                    //}
 				}
 
 				// divide the sum of values by the amount of samples
@@ -142,10 +149,10 @@ Shader "Game/S_GaussianBlurPostProcess"
 			{
 
 				// failsafe so we can use turn off the blur by setting the deviation to 0
-				if (_Gauss != 0.0f && _StandardDeviation == 0.0f)
-				{
-					return tex2D(_MainTex, i.uv);
-				}
+				//if (_Gauss != 0.0f && _StandardDeviation == 0.0f)
+				//{
+				//	return tex2D(_MainTex, i.uv);
+				//}
 
 				float sum = _Gauss != 0.0f ? 0.0f : _Samples;
 
@@ -153,29 +160,37 @@ Shader "Game/S_GaussianBlurPostProcess"
 				float invAspect = _ScreenParams.y / _ScreenParams.x;
 				float4 finalColor = float4(0.0, 0.0, 0.0, 0.0);
 
+                // Optimization: this is part of the calculation of the gaussian fuction
+                float stDevSquared = _StandardDeviation * _StandardDeviation;
+                float gaussEquationFactor = 1.0f / sqrt(2.0f * PI * stDevSquared);
+                float gaussEquationFactor2 = 1.0f / (2.0f * stDevSquared);
+
+                // Optimization: offset
+                float offsetEquationFactor = 1.0f / (_Samples - 1);
+                float offsetEquationFactor2 = _BlurSize * invAspect;
+
 				//iterate over blur samples
 				for (float index = 0; index < _Samples; index++)
 				{
 					//get the offset of the sample
-					float offset = (index / (_Samples - 1) - 0.5) * _BlurSize * invAspect;
+					float offset = (index  * offsetEquationFactor - 0.5) * offsetEquationFactor2;
 					//get uv coordinate of sample
 					float2 uv = i.uv + float2(offset, 0);
 
-                    if (_Gauss == 0.0f)
-                    {
+                    //if (_Gauss == 0.0f)
+                    //{
                         // simply add the color if we don't have a gaussian blur (box)
                         finalColor += tex2D(_MainTex, uv);
-                    }
-                    else
-                    {
+                    //}
+                    //else
+                    //{
                         // calculate the result of the gaussian function
-                        float stDevSquared = _StandardDeviation * _StandardDeviation;
-                        float gauss = (1 / sqrt(2 * PI * stDevSquared)) * pow(E, -((offset * offset) / (2 * stDevSquared)));
+                        float gauss = gaussEquationFactor * pow(E, -((offset * offset) * gaussEquationFactor2));
                         // add result to sum
                         sum += gauss;
                         // multiply color with influence from gaussian function and add it to sum color
                         finalColor += tex2D(_MainTex, uv) * gauss;
-                    }
+                    //}
 				}
 
 				// divide the sum of values by the amount of samples
