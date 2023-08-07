@@ -173,6 +173,22 @@ namespace UnityEngine.Experimental.Rendering.Universal
             }
         }
 
+        public bool Is2DShadowsEnabled
+        {
+            get
+            {
+                return m_Enable2DShadows;
+            }
+
+            set
+            {
+                m_Enable2DShadows = value;
+            }
+        }
+
+        [SerializeField]
+        bool m_Enable2DShadows = true;
+
         [SerializeField]
         bool m_Enable2DShadowBlurring = true;
 

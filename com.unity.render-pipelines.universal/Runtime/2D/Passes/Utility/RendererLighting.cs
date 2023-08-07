@@ -211,9 +211,14 @@ namespace UnityEngine.Experimental.Rendering.Universal
                         continue;
 
                     // CUSTOM CODE
-                    hasRenderedShadows |=
+                    if(pass.rendererData.Is2DShadowsEnabled)
+                    {
+                        hasRenderedShadows |=
                     //
-                        ShadowRendering.RenderShadows(pass, renderingData, cmd, layerToRender, light, light.shadowIntensity, renderTexture, renderTexture);
+                            ShadowRendering.RenderShadows(pass, renderingData, cmd, layerToRender, light, light.shadowIntensity, renderTexture, renderTexture);
+                    // CUSTOM CODE
+                    }
+                    //
 
                     if (!renderedAnyLight && rtNeedsClear)
                     {
@@ -302,7 +307,14 @@ namespace UnityEngine.Experimental.Rendering.Universal
                                 var lightMesh = light.lightMesh;
                                 if (lightMesh != null)
                                 {
-                                    ShadowRendering.RenderShadows(pass, renderingData, cmd, layerToRender, light, light.shadowVolumeIntensity, renderTexture, depthTexture);
+                                    // CUSTOM CODE
+                                    if (pass.rendererData.Is2DShadowsEnabled)
+                                    {
+                                    //
+                                        ShadowRendering.RenderShadows(pass, renderingData, cmd, layerToRender, light, light.shadowVolumeIntensity, renderTexture, depthTexture);
+                                    // CUSTOM CODE
+                                    }
+                                    //
 
                                     if (light.lightType == Light2D.LightType.Sprite && light.lightCookieSprite != null && light.lightCookieSprite.texture != null)
                                         cmd.SetGlobalTexture(k_CookieTexID, light.lightCookieSprite.texture);

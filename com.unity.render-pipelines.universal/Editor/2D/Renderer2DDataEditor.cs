@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
             // CUSTOM CODE
             public static readonly GUIContent renderTargets = EditorGUIUtility.TrTextContent("Additional render targets", "A list of render targets to be set when rendering 2D geometry, in the same order. The first texture must be accessed by the index 1 in the shaders, as the index 0 will be occupied by a default color texture.");
+            public static readonly GUIContent enable2DShadows = EditorGUIUtility.TrTextContent("Enable 2D shadows", "When enabled, shadows casted by 2D lights will be calculated and rendered.");
             public static readonly GUIContent enable2DShadowBlurring = EditorGUIUtility.TrTextContent("Enable 2D shadow blurring", "When enabled, it applies gaussian blur to the 2D shadows texture calculated for every camera (if shadows are rendered by that camera).");
             public static readonly GUIContent shadowBlurBlitMaterial = EditorGUIUtility.TrTextContent("Shadow blur blit material", "The material to use in the blit operation when shadows are blurred.");
             //
@@ -55,6 +56,7 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
         // CUSTOM CODE
         SerializedProperty m_renderTargets;
+        SerializedProperty m_enable2DShadows;
         SerializedProperty m_enable2DShadowBlurring;
         SerializedProperty m_shadowBlurBlitMaterial;
         //
@@ -114,6 +116,7 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
             // CUSTOM CODE
             m_renderTargets = serializedObject.FindProperty("m_renderTargets");
+            m_enable2DShadows = serializedObject.FindProperty("m_Enable2DShadows");
             m_enable2DShadowBlurring = serializedObject.FindProperty("m_Enable2DShadowBlurring");
             m_shadowBlurBlitMaterial = serializedObject.FindProperty("m_shadowBlurBlitMaterial");
             //
@@ -201,6 +204,7 @@ namespace UnityEditor.Experimental.Rendering.Universal
 
             // CUSTOM CODE
             EditorGUILayout.PropertyField(m_renderTargets, Styles.renderTargets);
+            EditorGUILayout.PropertyField(m_enable2DShadows, Styles.enable2DShadows);
             EditorGUILayout.PropertyField(m_enable2DShadowBlurring, Styles.enable2DShadowBlurring);
             EditorGUILayout.PropertyField(m_shadowBlurBlitMaterial, Styles.shadowBlurBlitMaterial);
             //
