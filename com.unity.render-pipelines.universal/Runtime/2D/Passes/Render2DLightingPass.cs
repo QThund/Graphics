@@ -166,7 +166,13 @@ namespace UnityEngine.Experimental.Rendering.Universal
                             this.RenderNormals(context, renderingData.cullResults, normalsDrawSettings, filterSettings, depthAttachment);
 
                         cmd.Clear();
-                        if (lightStats.totalLights > 0)
+                        if (lightStats.totalLights > 0
+                            // CUSTOM CODE
+                            &&
+                            !renderingData.cameraData.isPreviewCamera &&
+                            !renderingData.cameraData.isSceneViewCamera
+                            //
+                            )
                         {
                             // CUSTOM CODE
                             bool hasRenderedShadows = false;
