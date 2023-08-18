@@ -598,8 +598,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     rtDirty = true;
 
                 // CUSTOM CODE
-                
-                //RenderTargetIdentifier cachedLightsTextureId = (renderingData.cameraData.renderer as Renderer2D).k_AdditionalRenderTargetHandles[pass.rendererData.GetIndexOfRenderTarget("_CachedLightsTexture")].Identifier();
 
                 // Light textures caching
                 // It draws a quad per cached light texture, according to its transformations at the moment the texture was captured
@@ -661,15 +659,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
                             cmd.DrawMesh(GetQuadMesh(), Matrix4x4.TRS((Vector2)mainCamera.transform.position - quadSize * 0.5f, mainCamera.transform.rotation, new Vector3(quadSize.x, quadSize.y, 1.0f)), GetBlitLightTextureMaterial());
                             cmd.SetRenderTarget(RenderTexture.active);
                         }
-                        //cmd.Blit(rtID, pass.rendererData.CachedLightsRenderTexture, GetBlitLightTextureMaterial());
-                        //cmd.CopyTexture(rtID, pass.rendererData.CachedLightsRenderTexture);
-                        //}
-                        //else
-                        //{
-                        // Just uses the cached lights texture instead of drawing them
-                        //    cmd.CopyTexture(cachedLightsTextureId, rtID);
-                        //}
-                        //
                     }
 #endif
                 }
@@ -684,7 +673,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     layerToRender,
                     rtID,
                     // CUSTOM CODE
-                    false, //(pass.rendererData.lightBlendStyles[i].isDirty || rtDirty), // False so the light texture is not cleared
+                    false, // False so the light texture is not cleared
                     //
                     clearColor,
                     // CUSTOM CODE
