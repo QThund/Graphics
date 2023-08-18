@@ -94,6 +94,12 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     m_VisibleLights.Add(light);
                     continue;
                 }
+                // CUSTOM CODE
+                else if (light.intensity <= 0.0f)
+                {
+                    continue;
+                }
+                //
 
                 Profiler.BeginSample("Test Planes");
                 var position = light.boundingSphere.position;
