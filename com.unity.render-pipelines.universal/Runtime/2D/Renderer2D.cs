@@ -23,6 +23,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
         GlitchDistortionPostProcessPass m_GlitchDistortionPostProcessPass;
         ScreenScalingPostProcessPass m_ScreenScalingPostProcessPass;
         SunShaftsPostProcessPass m_SunShaftsPostProcessPass;
+
+        public override ScriptableRendererData rendererData => m_Renderer2DData;
         //
 
         private static readonly ProfilingSampler m_ProfilingSampler = new ProfilingSampler("Create Camera Textures");

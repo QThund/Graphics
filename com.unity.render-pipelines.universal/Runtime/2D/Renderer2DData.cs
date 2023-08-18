@@ -186,6 +186,74 @@ namespace UnityEngine.Experimental.Rendering.Universal
             }
         }
 
+        public bool IsLightTextureCachingEnabled
+        {
+            get
+            {
+                return m_EnableLightTextureCaching;
+            }
+
+            set
+            {
+                m_EnableLightTextureCaching = value;
+            }
+        }
+
+        public bool IsLightTextureCachingDebugModeEnabled
+        {
+            get
+            {
+                return m_EnableDebugModeForLightTextureCaching;
+            }
+
+            set
+            {
+                m_EnableDebugModeForLightTextureCaching = value;
+            }
+        }
+
+        public RenderTexture CachedLightsRenderTexture
+        {
+            get
+            {
+                return m_CachedLightsRenderTexture;
+            }
+        }
+
+        public bool IsLightTextureCapturingEnabled
+        {
+            get
+            {
+                return m_EnableLightTextureCapturing;
+            }
+        }
+
+        public int LightTextureBlendStyleToCapture
+        {
+            get
+            {
+                return m_LightTextureBlendStyleToCapture;
+            }
+        }
+
+        public int LightTextureSortingLayerToCapture
+        {
+            get
+            {
+                return m_LightTextureSortingLayerToCapture;
+            }
+        }
+
+        public float MaximumLightAccumulationPerColorChannel
+        {
+            get
+            {
+                return m_MaximumLightAccumulationPerColorChannel;
+            }
+        }
+
+        [Header("2D shadow rendering")]
+
         [SerializeField]
         bool m_Enable2DShadows = true;
 
@@ -194,6 +262,31 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
         [SerializeField]
         Material m_shadowBlurBlitMaterial;
+
+        [Header("2D light texture caching")]
+
+        [SerializeField]
+        bool m_EnableLightTextureCaching = true;
+
+        [SerializeField]
+        bool m_EnableDebugModeForLightTextureCaching = false;
+
+        [Header("2D light texture capturing")]
+
+        [SerializeField]
+        bool m_EnableLightTextureCapturing = true;
+
+        [SerializeField]
+        int m_LightTextureBlendStyleToCapture;
+
+        [SerializeField]
+        int m_LightTextureSortingLayerToCapture;
+
+        [SerializeField]
+        float m_MaximumLightAccumulationPerColorChannel = 3.0f;
+
+        [SerializeField]
+        RenderTexture m_CachedLightsRenderTexture;
         //
 
         public float hdrEmulationScale => m_HDREmulationScale;
@@ -255,5 +348,23 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
         // this shouldn've been in RenderingData along with other cull results
         internal ILight2DCullResult lightCullResult { get; set; }
+
+        // CUSTOM CODE
+        [Serializable]
+        public class CachedLightTextureData
+        {
+            public Matrix4x4 WorldMatrix;
+            public Texture2D Texture;
+            public int SortingLayerId;
+            public int BlendStyle;
+            public float MaximumLightAccumulationPerColorChannel;
+        }
+
+        public List<CachedLightTextureData> CachedLightTextures
+        {
+            get;
+            set;
+        }
+        //
     }
 }

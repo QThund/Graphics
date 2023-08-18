@@ -306,6 +306,16 @@ namespace UnityEngine.Rendering.Universal
         /// </summary>
         public GraphicsDeviceType[] unsupportedGraphicsDeviceTypes { get; set; } = new GraphicsDeviceType[0];
 
+        // CUSTOM CODE
+        public virtual ScriptableRendererData rendererData
+        {
+            get
+            {
+                return null;
+            }
+        }
+        //
+
         static class RenderPassBlock
         {
             // Executes render passes that are inputs to the main rendering

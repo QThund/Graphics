@@ -17,6 +17,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
     internal interface ILight2DCullResult
     {
         List<Light2D> visibleLights { get; }
+        // CUSTOM CODE
+        List<Light2D> visibleStaticLights { get; }
+        List<Light2D> visibleNonStaticLights { get; }
+        //
         LightStats GetLightStatsByLayer(int layer);
         bool IsSceneLit();
     }
@@ -24,7 +28,15 @@ namespace UnityEngine.Experimental.Rendering.Universal
     internal class Light2DCullResult : ILight2DCullResult
     {
         private List<Light2D> m_VisibleLights = new List<Light2D>();
+        // CUSTOM CODE
+        private List<Light2D> m_StaticVisibleLights = new List<Light2D>();
+        private List<Light2D> m_NonStaticVisibleLights = new List<Light2D>();
+        //
         public List<Light2D> visibleLights => m_VisibleLights;
+        // CUSTOM CODE
+        public List<Light2D> visibleStaticLights => m_StaticVisibleLights;
+        public List<Light2D> visibleNonStaticLights => m_NonStaticVisibleLights;
+        //
 
         public bool IsSceneLit()
         {
@@ -63,6 +75,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
         {
             Profiler.BeginSample("Cull 2D Lights");
             m_VisibleLights.Clear();
+            // CUSTOM CODE
+            m_StaticVisibleLights.Clear();
+            m_NonStaticVisibleLights.Clear();
+            //
             foreach (var light in Light2DManager.lights)
             {
                 if ((camera.cullingMask & (1 << light.gameObject.layer)) == 0)
@@ -98,6 +114,17 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     continue;
 
                 m_VisibleLights.Add(light);
+
+                // CUSTOM CODE
+                if(light.gameObject.isStatic)
+                {
+                    m_StaticVisibleLights.Add(light);
+                }
+                else
+                {
+                    m_NonStaticVisibleLights.Add(light);
+                }
+                //
             }
 
             // must be sorted here because light order could change

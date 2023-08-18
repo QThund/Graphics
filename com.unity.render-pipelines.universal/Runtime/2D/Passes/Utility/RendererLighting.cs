@@ -95,6 +95,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
                                                                                 Shader.PropertyToID("_VolumeTexture3IsAdditive")};
         private static readonly int k_IsDitheringEnabledID = Shader.PropertyToID("_IsDitheringEnabled");
         private static readonly int k_DitheringTextureID = Shader.PropertyToID("_DitheringTexture");
+        private static readonly int k_CachedLightTextureID = Shader.PropertyToID("_LightTexture");
+        private static readonly int k_MaximumColorChannelValuesID = Shader.PropertyToID("_MaximumColorChannelValues");
+        private static readonly int k_BlitSourceTexID = Shader.PropertyToID("_SourceTex");
+        private static readonly int k_CachedLightTextureColorID = Shader.PropertyToID("_Color");
         //
         private static readonly int k_CookieTexID = Shader.PropertyToID("_CookieTex");
         private static readonly int k_FalloffLookupID = Shader.PropertyToID("_FalloffLookup");
@@ -108,6 +112,84 @@ namespace UnityEngine.Experimental.Rendering.Universal
         private static readonly int k_IsFullSpotlightID = Shader.PropertyToID("_IsFullSpotlight");
         private static readonly int k_LightZDistanceID = Shader.PropertyToID("_LightZDistance");
         private static readonly int k_PointLightCookieTexID = Shader.PropertyToID("_PointLightCookieTex");
+
+        // CUSTOM CODE
+        private static Mesh m_quadMesh;
+        private static Material m_cachedLightTextureMaterial;
+        private static Material m_blitLightTextureMaterial;
+
+        // Gets a mesh made of 6 vertices (position, normal and texture coordinates) and 2 triangles, forming a quad
+        private static Mesh GetQuadMesh()
+        {
+            if(m_quadMesh == null)
+            {
+                m_quadMesh = new Mesh();
+
+                float width = 1.0f;
+                float height = 1.0f;
+
+                Vector3[] vertices = new Vector3[4]
+                                        {
+                                            new Vector3(0, 0, 0),
+                                            new Vector3(width, 0, 0),
+                                            new Vector3(0, height, 0),
+                                            new Vector3(width, height, 0)
+                                        };
+                m_quadMesh.vertices = vertices;
+
+                int[] tris = new int[6]
+                                    {
+                                        // lower left triangle
+                                        0, 2, 1,
+                                        // upper right triangle
+                                        2, 3, 1
+                                    };
+                m_quadMesh.triangles = tris;
+
+                Vector3[] normals = new Vector3[4]
+                                        {
+                                            -Vector3.forward,
+                                            -Vector3.forward,
+                                            -Vector3.forward,
+                                            -Vector3.forward
+                                        };
+                m_quadMesh.normals = normals;
+
+                Vector2[] uv = new Vector2[4]
+                                    {
+                                        new Vector2(0, 0),
+                                        new Vector2(1, 0),
+                                        new Vector2(0, 1),
+                                        new Vector2(1, 1)
+                                    };
+                m_quadMesh.uv = uv;
+            }
+
+            return m_quadMesh;
+        }
+
+        // Gets the material used when drawing quads to write the contents of the cached light textures on the temporary light texture (quads have position, orientation and size)
+        private static Material GetCachedLightTextureMaterial()
+        {
+            if(m_cachedLightTextureMaterial == null)
+            {
+                m_cachedLightTextureMaterial = new Material(Shader.Find("2D/S_CachedLightTextureQuad"));
+            }
+
+            return m_cachedLightTextureMaterial;
+        }
+
+        // Gets the material used when blitting the content of the temporary light texture to the external render texture
+        private static Material GetBlitLightTextureMaterial()
+        {
+            if (m_blitLightTextureMaterial == null)
+            {
+                m_blitLightTextureMaterial = new Material(Shader.Find("2D/S_BlitLightTextureResultProcessed"));
+            }
+
+            return m_blitLightTextureMaterial;
+        }
+        //
 
         private static GraphicsFormat GetRenderTextureFormat()
         {
@@ -504,6 +586,10 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
                 var rtID = pass.rendererData.lightBlendStyles[i].renderTargetHandle.Identifier();
                 cmd.SetRenderTarget(rtID);
+                // CUSTOM CODE
+                // It clears the light texture when changing to a new blend style or sorting layer
+                cmd.ClearRenderTarget(false, true, Color.clear);
+                //
 
                 var rtDirty = false;
                 if (!Light2DManager.GetGlobalColor(layerToRender, i, out var clearColor))
@@ -511,16 +597,98 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 else
                     rtDirty = true;
 
+                // CUSTOM CODE
+                
+                //RenderTargetIdentifier cachedLightsTextureId = (renderingData.cameraData.renderer as Renderer2D).k_AdditionalRenderTargetHandles[pass.rendererData.GetIndexOfRenderTarget("_CachedLightsTexture")].Identifier();
+
+                // Light textures caching
+                // It draws a quad per cached light texture, according to its transformations at the moment the texture was captured
+                bool thereAreCachedLightTextures = false;
+                List<Renderer2DData.CachedLightTextureData> cachedLightTextures = pass.rendererData.CachedLightTextures;
+
+                if (pass.rendererData.IsLightTextureCachingEnabled && cachedLightTextures != null)
+                {
+                    Color debugColor = pass.rendererData.IsLightTextureCachingDebugModeEnabled ? Color.green
+                                                                                               : Color.clear;
+                    GetCachedLightTextureMaterial().SetColor(k_CachedLightTextureColorID, debugColor);
+
+                    for (int j = 0; j < cachedLightTextures.Count; ++j)
+                    {
+                        // It only draws the textures that correspond to the current blend style and sorting layer
+                        if(cachedLightTextures[j].SortingLayerId == layerToRender &&
+                           cachedLightTextures[j].BlendStyle == i)
+                        {
+                            thereAreCachedLightTextures = true;
+                            cmd.SetGlobalTexture(k_CachedLightTextureID, new RenderTargetIdentifier(cachedLightTextures[j].Texture));
+                            cmd.SetGlobalFloat(k_MaximumColorChannelValuesID, cachedLightTextures[j].MaximumLightAccumulationPerColorChannel);
+                            cmd.DrawMesh(GetQuadMesh(), cachedLightTextures[j].WorldMatrix, GetCachedLightTextureMaterial());
+                        }
+                    }
+                }
+
+                // If there are no cached light textures for the current blend style and sorting layer, then draw the static lights as usual
+                if(!thereAreCachedLightTextures)
+                {
+                    // Renders all the static lights
+                    rtDirty |= RenderLightSet(
+                        pass, renderingData,
+                        i,
+                        cmd,
+                        layerToRender,
+                        rtID,
+                        false, // False so the light texture is not cleared
+                        clearColor,
+                        pass.rendererData.lightCullResult.visibleStaticLights
+                        , out hasRenderedShadowsForBlendingStyle
+                    );
+
+#if UNITY_EDITOR
+                    // Light textures capturing
+                    if(pass.rendererData.IsLightTextureCapturingEnabled)
+                    {
+                        // Caches the resulting texture (before blurring)
+
+                        // Note: It's not possible to just copy the render texture (CopyTexture) because its format is R11G11B10 and format of the potentially stored textures (PNG) uses RGBA32. When several lights overlap, the resulting values of the color channels (RGBA) for each pixel may be greater than 1. When the texture is converted from R11G11B10 to RGBA32 format, color channels are trimmed, leading to darker colors. To avoid that, colors are normalized before they are converted, and denormalized when they are read back. This value establishes the maximum value each color channel may have without being trimmed, the value that will be equivalent to 1 in the normalized texture. Unfortunatelly, the higher the value is, the lower the quality of the texture will be, as we are reducing the range of values that each channel can represent (color banding may appear)..
+                        if ((blendStylesUsed & (1u << pass.rendererData.LightTextureBlendStyleToCapture)) != 0 && // Does the set of blend styles of the current iteration include the blend style to be captured?
+                            layerToRender == pass.rendererData.LightTextureSortingLayerToCapture)
+                        {
+                            // Note: Yes, this is a Blit, but cmd.Blit takes a different texture when using rtID, and I have no explanation for that
+                            cmd.SetRenderTarget(pass.rendererData.CachedLightsRenderTexture);
+                            cmd.SetGlobalTexture(k_BlitSourceTexID, rtID);
+                            cmd.SetGlobalFloat(k_MaximumColorChannelValuesID, pass.rendererData.MaximumLightAccumulationPerColorChannel);
+                            Camera mainCamera = renderingData.cameraData.camera;
+                            Vector2 quadSize = new Vector2(mainCamera.aspect * mainCamera.orthographicSize, mainCamera.orthographicSize) * 2.0f;
+                            cmd.DrawMesh(GetQuadMesh(), Matrix4x4.TRS((Vector2)mainCamera.transform.position - quadSize * 0.5f, mainCamera.transform.rotation, new Vector3(quadSize.x, quadSize.y, 1.0f)), GetBlitLightTextureMaterial());
+                            cmd.SetRenderTarget(RenderTexture.active);
+                        }
+                        //cmd.Blit(rtID, pass.rendererData.CachedLightsRenderTexture, GetBlitLightTextureMaterial());
+                        //cmd.CopyTexture(rtID, pass.rendererData.CachedLightsRenderTexture);
+                        //}
+                        //else
+                        //{
+                        // Just uses the cached lights texture instead of drawing them
+                        //    cmd.CopyTexture(cachedLightsTextureId, rtID);
+                        //}
+                        //
+                    }
+#endif
+                }
+
+                // Renders all the non-static lights
+                //
+
                 rtDirty |= RenderLightSet(
                     pass, renderingData,
                     i,
                     cmd,
                     layerToRender,
                     rtID,
-                    (pass.rendererData.lightBlendStyles[i].isDirty || rtDirty),
-                    clearColor,
-                    pass.rendererData.lightCullResult.visibleLights
                     // CUSTOM CODE
+                    false, //(pass.rendererData.lightBlendStyles[i].isDirty || rtDirty), // False so the light texture is not cleared
+                    //
+                    clearColor,
+                    // CUSTOM CODE
+                    pass.rendererData.lightCullResult.visibleNonStaticLights
                     , out hasRenderedShadowsForBlendingStyle
                     //
                 );
