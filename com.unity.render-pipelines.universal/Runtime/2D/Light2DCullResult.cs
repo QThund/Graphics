@@ -120,21 +120,26 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     continue;
 
                 m_VisibleLights.Add(light);
-
-                // CUSTOM CODE
-                if(light.gameObject.isStatic)
-                {
-                    m_StaticVisibleLights.Add(light);
-                }
-                else
-                {
-                    m_NonStaticVisibleLights.Add(light);
-                }
-                //
             }
 
             // must be sorted here because light order could change
             m_VisibleLights.Sort((l1, l2) => l1.lightOrder - l2.lightOrder);
+
+            // CUSTOM CODE
+            // Splitting after sorting makes sure these other lists are sorted too
+            for (int i = 0; i < m_VisibleLights.Count; ++i)
+            {
+                if (m_VisibleLights[i].gameObject.isStatic)
+                {
+                    m_StaticVisibleLights.Add(m_VisibleLights[i]);
+                }
+                else
+                {
+                    m_NonStaticVisibleLights.Add(m_VisibleLights[i]);
+                }
+            }
+            //
+
             Profiler.EndSample();
         }
     }
