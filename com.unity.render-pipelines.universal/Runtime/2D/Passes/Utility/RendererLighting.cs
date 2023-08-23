@@ -586,10 +586,6 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
                 var rtID = pass.rendererData.lightBlendStyles[i].renderTargetHandle.Identifier();
                 cmd.SetRenderTarget(rtID);
-                // CUSTOM CODE
-                // It clears the light texture when changing to a new blend style or sorting layer
-                cmd.ClearRenderTarget(false, true, Color.clear);
-                //
 
                 var rtDirty = false;
                 if (!Light2DManager.GetGlobalColor(layerToRender, i, out var clearColor))
@@ -598,7 +594,9 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     rtDirty = true;
 
                 // CUSTOM CODE
-
+                // It clears the light texture when changing to a new blend style or sorting layer
+                cmd.ClearRenderTarget(false, true, clearColor);
+                
                 // Light textures caching
                 // It draws a quad per cached light texture, according to its transformations at the moment the texture was captured
                 bool thereAreCachedLightTextures = false;
