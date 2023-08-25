@@ -127,13 +127,14 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
                 float width = 1.0f;
                 float height = 1.0f;
+                Vector3 halfSize = new Vector3(0.5f, 0.5f, 0.5f);
 
                 Vector3[] vertices = new Vector3[4]
                                         {
-                                            new Vector3(0, 0, 0),
-                                            new Vector3(width, 0, 0),
-                                            new Vector3(0, height, 0),
-                                            new Vector3(width, height, 0)
+                                            new Vector3(0, 0, 0) - halfSize,
+                                            new Vector3(width, 0, 0) - halfSize,
+                                            new Vector3(0, height, 0) - halfSize,
+                                            new Vector3(width, height, 0) - halfSize
                                         };
                 m_quadMesh.vertices = vertices;
 
@@ -654,7 +655,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                             cmd.SetGlobalFloat(k_MaximumColorChannelValuesID, pass.rendererData.MaximumLightAccumulationPerColorChannel);
                             Camera mainCamera = renderingData.cameraData.camera;
                             Vector2 quadSize = new Vector2(mainCamera.aspect * mainCamera.orthographicSize, mainCamera.orthographicSize) * 2.0f;
-                            cmd.DrawMesh(GetQuadMesh(), Matrix4x4.TRS((Vector2)mainCamera.transform.position - quadSize * 0.5f, mainCamera.transform.rotation, new Vector3(quadSize.x, quadSize.y, 1.0f)), GetBlitLightTextureMaterial());
+                            cmd.DrawMesh(GetQuadMesh(), Matrix4x4.TRS((Vector2)mainCamera.transform.position, mainCamera.transform.rotation, new Vector3(quadSize.x, quadSize.y, 1.0f)), GetBlitLightTextureMaterial());
                             cmd.SetRenderTarget(RenderTexture.active);
                         }
                     }
