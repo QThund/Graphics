@@ -80,6 +80,23 @@ namespace UnityEngine.Experimental.Rendering.Universal
                 var shadowMaterial = pass.rendererData.GetShadowMaterial(1);
                 var removeSelfShadowMaterial = pass.rendererData.GetRemoveSelfShadowMaterial(1);
                 var shadowCasterGroups = ShadowCasterGroup2DManager.shadowCasterGroups;
+
+                // CUSTOM CODE
+                // Cleans the list of null groups, in case it was necessary
+                int s = 0; 
+
+                while(s < shadowCasterGroups.Count)
+                {
+                    if(shadowCasterGroups[s] == null)
+                    {
+                        shadowCasterGroups.RemoveAt(s);
+                        continue;
+                    }
+
+                    ++s;
+                }
+                //
+
                 if (shadowCasterGroups != null && shadowCasterGroups.Count > 0)
                 {
                     var previousShadowGroupIndex = -1;
