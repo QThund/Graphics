@@ -83,17 +83,12 @@ namespace UnityEngine.Experimental.Rendering.Universal
 
                 // CUSTOM CODE
                 // Cleans the list of null groups, in case it was necessary
-                int s = 0; 
-
-                while(s < shadowCasterGroups.Count)
+                for(int s = shadowCasterGroups.Count - 1; s >= 0; --s)
                 {
-                    if(shadowCasterGroups[s] == null)
+                    if (shadowCasterGroups[s] == null)
                     {
                         shadowCasterGroups.RemoveAt(s);
-                        continue;
                     }
-
-                    ++s;
                 }
                 //
 
