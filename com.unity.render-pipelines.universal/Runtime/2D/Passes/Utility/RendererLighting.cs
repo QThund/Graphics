@@ -608,12 +608,15 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     Color debugColor = pass.rendererData.IsLightTextureCachingDebugModeEnabled ? Color.green
                                                                                                : Color.clear;
                     GetCachedLightTextureMaterial().SetColor(k_CachedLightTextureColorID, debugColor);
+                    Vector2 cameraViewportSize = new Vector2(renderingData.cameraData.camera.aspect * renderingData.cameraData.camera.orthographicSize * 2.0f, renderingData.cameraData.camera.orthographicSize * 2.0f);
+                    Rect cameraRect = new Rect((Vector2)renderingData.cameraData.camera.transform.position - cameraViewportSize * 0.5f, cameraViewportSize);
 
                     for (int j = 0; j < cachedLightTextures.Count; ++j)
                     {
                         // It only draws the textures that correspond to the current blend style and sorting layer
                         if(cachedLightTextures[j].SortingLayerId == layerToRender &&
-                           cachedLightTextures[j].BlendStyle == i)
+                           cachedLightTextures[j].BlendStyle == i &&
+                           cameraRect.Overlaps(cachedLightTextures[j].WorldRect))
                         {
                             thereAreCachedLightTextures = true;
                             cmd.SetGlobalTexture(k_CachedLightTextureID, new RenderTargetIdentifier(cachedLightTextures[j].Texture));

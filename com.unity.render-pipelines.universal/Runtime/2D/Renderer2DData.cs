@@ -354,6 +354,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
         public class CachedLightTextureData
         {
             public Matrix4x4 WorldMatrix;
+            public Rect WorldRect;
             public Texture2D Texture;
             public int SortingLayerId;
             public int BlendStyle;
