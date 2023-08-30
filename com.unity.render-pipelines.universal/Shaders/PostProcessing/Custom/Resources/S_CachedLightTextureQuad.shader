@@ -47,6 +47,7 @@ Shader "2D/S_CachedLightTextureQuad"
             float4 frag(v2f i) : SV_Target
             {
                 float4 color = SAMPLE_TEXTURE2D(_LightTexture, sampler_LightTexture, i.uv) * _MaximumColorChannelValues;
+                clip(color.r + color.g + color.b > 0.0f ? 1.0f : -1.0f);
                 return color + _Color;
             }
             ENDHLSL

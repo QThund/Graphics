@@ -226,6 +226,11 @@ namespace UnityEngine.Experimental.Rendering.Universal
             {
                 return m_EnableLightTextureCapturing;
             }
+
+            set
+            {
+                m_EnableLightTextureCapturing = true;
+            }
         }
 
         public int LightTextureBlendStyleToCapture
