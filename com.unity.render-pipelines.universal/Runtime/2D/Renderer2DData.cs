@@ -364,6 +364,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
             public int SortingLayerId;
             public int BlendStyle;
             public float MaximumLightAccumulationPerColorChannel;
+            public bool ContainsShadows;
         }
 
         public List<CachedLightTextureData> CachedLightTextures

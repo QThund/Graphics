@@ -574,6 +574,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                     if(layers[l].id == layerToRender)
                     {
                         layerName = layers[l].name;
+                        break;
                     }
                 }
 
@@ -622,6 +623,8 @@ namespace UnityEngine.Experimental.Rendering.Universal
                             cmd.SetGlobalTexture(k_CachedLightTextureID, new RenderTargetIdentifier(cachedLightTextures[j].Texture));
                             cmd.SetGlobalFloat(k_MaximumColorChannelValuesID, cachedLightTextures[j].MaximumLightAccumulationPerColorChannel);
                             cmd.DrawMesh(GetQuadMesh(), cachedLightTextures[j].WorldMatrix, GetCachedLightTextureMaterial());
+
+                            hasRenderedShadows |= cachedLightTextures[i].ContainsShadows;
                         }
                     }
                 }
@@ -642,6 +645,7 @@ namespace UnityEngine.Experimental.Rendering.Universal
                         , out hasRenderedShadowsForBlendingStyle
                     );
 
+                    hasRenderedShadows |= hasRenderedShadowsForBlendingStyle;
 #if UNITY_EDITOR
                     // Light textures capturing
                     if(pass.rendererData.IsLightTextureCapturingEnabled)
